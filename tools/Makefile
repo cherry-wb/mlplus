@@ -5,11 +5,11 @@ CXXFLAGS += -g -Wall -Wextra
 
 DIR = $(PROJECT_DIR)/src
 INCLUDE = $(PROJECT_DIR)/include
-SRCS = naive_bayes.cpp abstract_instance.cpp instance.cpp  attribute.cpp instance_container.cpp attribute_container.cpp special_functions.cpp estimator.cpp  normal_estimator.cpp discrete_estimator.cpp binary_estimator.cpp dataset.cpp 
+SRCS = bayes_message_passing.cpp  naive_bayes.cpp abstract_instance.cpp instance.cpp  attribute.cpp instance_container.cpp attribute_container.cpp special_functions.cpp estimator.cpp  normal_estimator.cpp discrete_estimator.cpp binary_estimator.cpp dataset.cpp 
 
 OBJ=$(SRCS:.cpp=.o)
 
-all : naive_bayes_train naive_bayes_classify naive_bayes_train_sparse naive_bayes_classify_sparse libnaive_bayes_core.a $(OBJ)
+all : bayes_msg_passing naive_bayes_train naive_bayes_classify naive_bayes_train_sparse naive_bayes_classify_sparse libnaive_bayes_core.a $(OBJ)
 
 %.o: $(DIR)/%.cpp
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $< -o $@
@@ -22,6 +22,9 @@ naive_bayes_train: naive_bayes_train.cpp libnaive_bayes_core.a
 
 naive_bayes_classify: naive_bayes_classify.cpp  libnaive_bayes_core.a
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $< -lnaive_bayes_core -lm -lpthread -o $@ 
+
+bayes_msg_passing: bayes_msg_passing.cpp libnaive_bayes_core.a
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $< -lnaive_bayes_core -lm -lpthread -lboost_program_options -o $@ 
 
 naive_bayes_train_sparse:  naive_bayes_train_sparse.cpp  libnaive_bayes_core.a
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $< -lnaive_bayes_core -lm -lpthread -o $@

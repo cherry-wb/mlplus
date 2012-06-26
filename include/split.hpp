@@ -45,7 +45,7 @@ void split(const std::string& str,  std::vector<std::string>& result, const std:
     }
 }
 
-void split(const std::string& str, std::vector<std::string>& result, const std::string& delimiter=" \t\v")
+inline void split(const std::string& str, std::vector<std::string>& result, const std::string& delimiter=" \t\v")
 {
     split(str, result, delimiter, blankString); 
 }

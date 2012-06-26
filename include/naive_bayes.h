@@ -17,6 +17,7 @@ class NaiveBayes: public Classifier
 public:
     typedef int AttributeIndex;
     typedef Estimator* EstimatorPtr;
+    //P(Attribute|Class)
     typedef EstimatorPtr* PosteriorProbability; 
     typedef std::map<AttributeIndex,  PosteriorProbability>  DistributionMapType;
 private:

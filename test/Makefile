@@ -24,9 +24,15 @@ GMOCK_HEADERS = $(GMOCK_DIR)/include/gmock/*.h \
 SRC = $(PROJECT_DIR)/src
 INCLUDE = $(PROJECT_DIR)/include
 
-all:string_utility_unittest attribute_unittest instance_unittest special_function_unittest estimator_unittest  naive_bayes_unittest
+all:names_reader_unittest string_utility_unittest attribute_unittest instance_unittest special_function_unittest estimator_unittest  naive_bayes_unittest expression_unittest
     
-string_utility_unittest: string_trim_unittest.cpp
+names_reader_unittest: names_file_reader_unittest.cpp $(PROJECT_DIR)/src/names_file_reader.cpp $(PROJECT_DIR)/src/attribute.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lgmock -lgmock_main -lpthread $^ -o $@
+
+expression_unittest:  lexser_unittest.cpp expression_unittest.cpp $(SRC)/expression.cpp $(SRC)/lexser.cpp 
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $^ -lgmock -lgmock_main -lpthread -o $@
+
+string_utility_unittest: string_trim_unittest.cpp string_convert_unittest.cpp
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lgmock -lgmock_main -lpthread $^ -o $@
 
 attribute_unittest: attribute_unittest.cpp  $(PROJECT_DIR)/src/attribute.cpp $(PROJECT_DIR)/include/attribute.h
@@ -46,6 +52,7 @@ naive_bayes_unittest: naive_bayes_unittest.cpp $(SRC)/naive_bayes.cpp $(SRC)/abs
 
 
 clean :
+	rm -f $(TESTS) *.o
 	rm -f $(TESTS) *_unittest
 
 

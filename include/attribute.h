@@ -62,6 +62,8 @@ public:
         BINARY = 3, //for sparse attribute, means attribute exit in instance
         DATE = 4,
         COMPACTNOMINAL, //the multinomial interger value from 0 to n, [0,n)
+        TIME,
+        TIMESTAMP,
         UNKNOW
     };
 protected:

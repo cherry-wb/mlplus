@@ -1,7 +1,7 @@
 #ifndef MLPLUS_ESTIMATORS_DISCRETEESTIMATOR_H
 #define MLPLUS_ESTIMATORS_DISCRETEESTIMATOR_H
 #include "estimators/estimator.h"
-
+#include <string>
 namespace mlplus
 {
 namespace estimators
@@ -19,7 +19,7 @@ public:
     inline int getNumOfClass(void) const;
     inline double getCount(int data) const;
     inline double getSumOfCounts(void) const;
-
+    /*overrid*/void smoothing(Estimator*, double);
     /*override*/ double getProbability(double data);
     using Estimator::addValue;
     /*override*/ void addValue(double data, double weight);

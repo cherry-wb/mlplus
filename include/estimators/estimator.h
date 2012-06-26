@@ -20,6 +20,7 @@ public:
     virtual std::string toString() = 0;
     virtual void fromString(const std::string&) = 0;
     virtual double logScore(int nType);
+    virtual void smoothing(Estimator*, double) {};
 };
 /**
  * thread unsafe

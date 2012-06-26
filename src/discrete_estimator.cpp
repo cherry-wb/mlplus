@@ -25,7 +25,6 @@ void DiscreteEstimator::addValue(double val, double weight)
     mCounts[(int)val] += weight;
     mSumOfCounts += weight;
 }
-
 DiscreteEstimator::DiscreteEstimator(int nSymbols, bool laplace)
 {
     mNumOfClass = nSymbols;
@@ -37,6 +36,15 @@ DiscreteEstimator::DiscreteEstimator(int nSymbols, bool laplace)
             mCounts[i] = 1.0;
         mSumOfCounts = (double) nSymbols;
     }
+}
+void DiscreteEstimator::smoothing(Estimator* prior, double strenth)
+{
+    for (int i = 0; prior && i < mNumOfClass; ++i)
+    {
+        mCounts[i] +=  strenth * prior->getProbability(i);
+
+    }
+    mSumOfCounts += strenth;
 }
 double DiscreteEstimator::getProbability(double data)
 {
