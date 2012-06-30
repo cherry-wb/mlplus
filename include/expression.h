@@ -10,9 +10,11 @@ class Expression
 {
 public:
     Expression();
+    double evaluate(const char* str);
+    double evaluate(const char* str, const Scope& scope);
     void parse(Token* head, std::vector<Token*>& postStack) const;
     bool verify(std::vector<Token*>& postStack) const;
-    float evaluate(const Scope& scope);
+    double evaluate(std::vector<Token*>& postStack,const Scope& scope);
 private:
     void buildOperatorPriority();
     int operatorTable[OP_UNKNOW];

@@ -45,6 +45,7 @@ enum TokenType
     //()
     OP_LEFT,
     OP_RIGHT,
+    OP_COMMA,
     //bool
     OP_TRUE,
     OP_FALSE,
@@ -78,6 +79,7 @@ public:
     inline static bool validVariableChar(char c);
     inline static bool isOperator(TokenType);
     inline static bool isOperant(TokenType);
+    bool constValue(char* value) const;
     inline Token* getTokenHead();
 private:
     Token* mAHead;

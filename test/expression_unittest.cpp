@@ -4,8 +4,22 @@
 #include <iostream>
 #include "lexser.h"
 #include "expression.h"
+#include "scope.h"
 using namespace std;
 using namespace mlplus;
+
+TEST(epressionTest, evaluateTest){
+    string str = "-1 + +2";
+    Expression ex;
+    double v = ex.evaluate(str.c_str());
+    EXPECT_EQ(v, 1);
+
+    v = ex.evaluate("log(10)");
+    EXPECT_EQ(v, log(10));
+
+    v = ex.evaluate("1 + log(10) * 2");
+    EXPECT_EQ(v, 1+log(10)*2);
+}
 TEST(expressionTest, addTesting){
     string str = "-a + +b";
     Lexser lexser(str.c_str());

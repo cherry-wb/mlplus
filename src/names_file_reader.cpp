@@ -34,6 +34,19 @@ NamesFileReader::AttributeDesc  NamesFileReader::getAttributeMeta(const string& 
     }
     return AttributeDesc();
 }
+
+int  NamesFileReader::getIdFromName(const std::string& name) const
+{
+    std::vector<AttributeDesc>::const_iterator it = mExplicitAttributeMeta.begin();
+    for(; it != mExplicitAttributeMeta.end(); ++it)
+    {
+        if (it->name == name)
+        {
+            return it - mExplicitAttributeMeta.begin();
+        }
+    }
+    return -1;
+}
 void  NamesFileReader::read(const std::string& filename)
 {
     ifstream ifs(filename.c_str());

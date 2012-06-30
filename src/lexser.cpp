@@ -67,6 +67,7 @@ void Lexser::registerTokenTable()
     //()
     mTokenTable["("] = OP_LEFT;
     mTokenTable[")"] = OP_RIGHT;
+    mTokenTable[","] = OP_COMMA;
 }
 Token* Lexser::append(Token* tail, Token* next) const
 {
@@ -161,13 +162,20 @@ Token*  Lexser::scan(const char* str) const
             map<string, TokenType>::const_iterator it = mTokenTable.find(t->str);
             if (it == mTokenTable.end())
             {
-                t->type = OP_VAR;
+                if (constValue(t->str))
+                {
+                    t->type = OP_CONST;
+                }
+                else
+                {
+                    t->type = OP_VAR;
+                }
             }
             else
             {
                 if (c == '+' || c == '-')
                 {
-                    if (!tail || isOperator(tail->type))
+                    if (!tail || isOperator(tail->type) || tail->type == OP_RIGHT)
                     {
                         if (it->second == OP_MINUS)
                         {
@@ -201,3 +209,25 @@ Token*  Lexser::scan(const char* str) const
     return head;
 }
 
+bool Lexser::constValue(char* value) const
+{
+    char *p = value;
+    bool r = false;
+    if(isdigit(*p))
+    {
+        r = true;
+    }
+    while(isdigit(*p))
+    {
+        ++p;
+    }
+    if (*p == '.' || *p == 'e' || *p == 'E')
+    {
+        ++p;
+    }
+    while(isdigit(*p))
+    {
+        ++p;
+    }
+    return r && *p == 0;
+}

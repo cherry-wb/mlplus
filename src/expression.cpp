@@ -1,6 +1,9 @@
 #include "expression.h"
+#include "variant.h"
+#include "scope.h"
 #include <stack>
 #include <map>
+#include <cmath>
 #include <string>
 #include <vector>
 using namespace mlplus;
@@ -68,7 +71,10 @@ void Expression::parse(Token* head, vector<Token*>& postStack) const
                     top = opStack.top();
                     topP = operatorTable[top->type];
                 }
-                opStack.push(head);
+                if (head->type != OP_COMMA)//for function expression, don't support a,b,c
+                {
+                    opStack.push(head);
+                }
             }
         }
         head = head->next;
@@ -92,7 +98,6 @@ bool Expression::verify(std::vector<Token*>& postStack) const
     {
         switch((*rb)->type)
         {
-        case OP_POW:
         case OP_SIN:
         case OP_COS:
         case OP_TAN:
@@ -112,6 +117,7 @@ bool Expression::verify(std::vector<Token*>& postStack) const
                 break;
             }
             //{">=": "<=": "!= <>": ">": "<": "="}
+        case OP_POW:
         case OP_GE:
         case OP_LE:
         case OP_NE:
@@ -154,6 +160,288 @@ bool Expression::verify(std::vector<Token*>& postStack) const
     }
     return var == 1;
 }
+
+double Expression::evaluate(std::vector<Token*>& postStack, const Scope& scope)
+{
+    std::vector<Token*>::const_iterator rb = postStack.begin();
+    int var = 0;
+    stack<Variant> variables; 
+    Variant left = 0;
+    Variant right = 0;
+    for (;rb != postStack.end();++rb)
+    {
+        switch((*rb)->type)
+        {
+        case OP_SIN:
+            {
+                left = variables.top(); 
+                left.setDoubleValue(sin(left.asDouble()));
+                variables.pop();
+                variables.push(left);
+                break;
+            }
+        case OP_COS:
+            {
+                left = variables.top(); 
+                left.setDoubleValue(cos(left.asDouble()));
+                variables.pop();
+                variables.push(left);
+                break;
+            }
+        case OP_TAN:
+            {
+                left = variables.top(); 
+                left.setDoubleValue(tan(left.asDouble()));
+                variables.pop();
+                variables.push(left);
+                break;
+            }
+        case OP_LOG:
+            {
+                left = variables.top(); 
+                left.setDoubleValue(log(left.asDouble()));
+                variables.pop();
+                variables.push(left);
+                break;
+            }
+        case OP_EXP:
+            {
+                left = variables.top(); 
+                left.setDoubleValue(exp(left.asDouble()));
+                variables.pop();
+                variables.push(left);
+                break;
+            }
+        case OP_INT:
+            {
+                left = variables.top(); 
+                left.setDoubleValue(floor(left.asDouble()));
+                variables.pop();
+                variables.push(left);
+                break;
+            }
+        case OP_ADD_1:
+            {
+                break;
+            }
+        case OP_MINUS_1:
+            {
+                left = variables.top(); 
+                left.setDoubleValue(-(left.asDouble()));
+                variables.pop();
+                variables.push(left);
+                break;
+            }
+        case OP_ADD_ADD:
+            {
+                left = variables.top(); 
+                left.setDoubleValue(1+(left.asDouble()));
+                variables.pop();
+                variables.push(left);
+                break;
+            }
+        case OP_MINUS_MINUS:
+            {
+                left = variables.top(); 
+                left.setDoubleValue(left.asDouble() - 1);
+                variables.pop();
+                variables.push(left);
+                break;
+            }
+        case OP_NOT:
+            {
+                left = variables.top(); 
+                left.setDoubleValue((double)!left.asBoolean());
+                variables.pop();
+                variables.push(left);
+                break;
+            }
+            //{">=": "<=": "!= <>": ">": "<": "="}
+        case OP_GE:
+            {
+                right = variables.top(); 
+                variables.pop();
+                left = variables.top(); 
+                variables.pop();
+                left.setDoubleValue(double(left.compare(right)>=0));
+                variables.push(left);
+                break;
+            }
+        case OP_LE:
+            {
+                right = variables.top(); 
+                variables.pop();
+                left = variables.top(); 
+                variables.pop();
+                left.setDoubleValue(double(left.compare(right)<=0));
+                variables.push(left);
+                break;
+            }
+        case OP_NE:
+            {
+                right = variables.top(); 
+                variables.pop();
+                left = variables.top(); 
+                variables.pop();
+                left.setDoubleValue(double(left.compare(right)!=0));
+                variables.push(left);
+                break;
+            }
+        case OP_GT:
+            {
+                right = variables.top(); 
+                variables.pop();
+                left = variables.top(); 
+                variables.pop();
+                left.setDoubleValue(double(left.compare(right)>0));
+                variables.push(left);
+                break;
+            }
+        case OP_LS:
+            {
+                right = variables.top(); 
+                variables.pop();
+                left = variables.top(); 
+                variables.pop();
+                left.setDoubleValue(double(left.compare(right)<0));
+                variables.push(left);
+                break;
+            }
+        case OP_EQ:
+            {
+                right = variables.top(); 
+                variables.pop();
+                left = variables.top(); 
+                variables.pop();
+                left.setDoubleValue(double(left.compare(right)==0));
+                variables.push(left);
+                break;
+            }
+            //and or && ||
+        case OP_AND:
+            {
+                right = variables.top(); 
+                variables.pop();
+                left = variables.top(); 
+                variables.pop();
+                left.setDoubleValue(double(left.asBoolean() && right.asBoolean()));
+                variables.push(left);
+                break;
+            }
+        case OP_OR:
+            {
+                right = variables.top(); 
+                variables.pop();
+                left = variables.top(); 
+                variables.pop();
+                left.setDoubleValue(double((bool)left || (bool)right));
+                variables.push(left);
+                break;
+            }
+        case OP_ADD:
+        case OP_ADD_EQ: 
+            {
+                right = variables.top(); 
+                variables.pop();
+                left = variables.top(); 
+                variables.pop();
+                left.setDoubleValue((double)left + (double)right);
+                variables.push(left);
+                break;
+            }
+        case OP_MINUS:
+        case OP_MINUS_EQ:
+            {
+                right = variables.top(); 
+                variables.pop();
+                left = variables.top(); 
+                variables.pop();
+                left.setDoubleValue((double)left - (double)right);
+                variables.push(left);
+                break;
+            }
+        case OP_POW:
+            {
+                right = variables.top(); 
+                variables.pop();
+                left = variables.top(); 
+                variables.pop();
+                left.setDoubleValue(pow((double)left, (double)right));
+                variables.push(left);
+                break;
+            }
+        case OP_PLUS:
+        case OP_PLUS_EQ:
+            {
+                right = variables.top(); 
+                variables.pop();
+                left = variables.top(); 
+                variables.pop();
+                left.setDoubleValue((double)left * (double)right);
+                variables.push(left);
+                break;
+            }
+        case OP_DIV:
+        case OP_DIV_EQ:
+            {
+                right = variables.top(); 
+                variables.pop();
+                left = variables.top(); 
+                variables.pop();
+                left.setDoubleValue((double)left / (double)right);
+                variables.push(left);
+                break;
+            }
+        case OP_MOD:
+        case OP_MOD_EQ:
+            {
+                right = variables.top(); 
+                variables.pop();
+                left = variables.top(); 
+                variables.pop();
+                left.setDoubleValue((int64_t)left % (int64_t)right);
+                variables.push(left); 
+                break;
+            }
+        case OP_TRUE:
+            {
+                variables.push(true);
+                ++var;
+                break;
+            }
+        case OP_FALSE:
+            {
+                variables.push(false);
+                ++var;
+                break;
+            }
+        case OP_STRING:
+            {
+                variables.push((*rb)->str);
+                ++var;
+                break;
+            }
+        case OP_CONST:
+            {
+                float a = atof((*rb)->str);
+                variables.push(a);
+                ++var;
+                break;
+            }
+        case OP_VAR:
+            {
+                const Variant& t = scope.find((*rb)->str);
+                assert(!t.isNULL());
+                variables.push(atof((*rb)->str));
+                ++var;
+                break;
+            }
+        default:
+            return 0;
+        }
+    }
+    return variables.top().asDouble();
+}
 void  Expression::buildOperatorPriority()
 {
     //"pow" "sin" "cos"] = "tan" "log" "exp" "int"
@@ -189,6 +477,7 @@ void  Expression::buildOperatorPriority()
     operatorTable[OP_PLUS_EQ] = 15;
     operatorTable[OP_DIV_EQ] = 15;
     operatorTable[OP_MOD_EQ] = 15;
+    operatorTable[OP_COMMA] = 18;
 
     operatorTable[OP_ADD_ADD] = 2;
     operatorTable[OP_MINUS_MINUS] = 2;
@@ -201,4 +490,16 @@ void  Expression::buildOperatorPriority()
     operatorTable[OP_STRING] = 0;
     operatorTable[OP_CONST] = 0;
     operatorTable[OP_VAR] = 0;
+}
+
+double Expression::evaluate(const char* str, const Scope& scope)
+{
+    Lexser lex(str);
+    std::vector<Token*> postStack;
+    parse(lex.getTokenHead(), postStack);
+    return evaluate(postStack, scope);
+}
+double Expression::evaluate(const char* str)
+{
+    return evaluate(str, Scope());
 }

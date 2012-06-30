@@ -61,7 +61,7 @@ TEST(lexserTest, logicExpression){
     EXPECT_STREQ(tk->str, ">");
 
     tk = tk->next;
-    EXPECT_EQ(tk->type, OP_VAR);
+    EXPECT_EQ(tk->type, OP_CONST);
     EXPECT_STREQ(tk->str, "0");
 
     tk = tk->next;

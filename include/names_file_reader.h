@@ -39,6 +39,9 @@ public:
     Attribute* makeAttribute(int index) const;
     AttributeDesc getAttributeMeta(const std::string&) const;
     AttributeDesc getExplictAttrMeta(int i) const;
+    int getIdFromName(const std::string&) const;
+    inline const std::vector<AttributeDesc>& getImplicitAttributeMeta() const;
+    inline const std::vector<AttributeDesc>& getExplicitAttributeMeta() const;
 private:
     bool stuffTarget();
     void setAttributeIgnore();
@@ -50,6 +53,15 @@ private:
     std::vector<AttributeDesc> mExplicitAttributeMeta;
 };
 
+inline const std::vector<NamesFileReader::AttributeDesc>&
+    NamesFileReader::getImplicitAttributeMeta() const
+{
+    return mImplicitAttributeMeta;
+}
+inline const std::vector<NamesFileReader::AttributeDesc>& NamesFileReader::getExplicitAttributeMeta() const
+{
+    return mExplicitAttributeMeta;
+}
 inline void  NamesFileReader::setBit(uint64_t& target, const uint64_t bit)
 {
     target |= bit;
