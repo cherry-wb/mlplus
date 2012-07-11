@@ -16,16 +16,18 @@ namespace mlplus
 using namespace std;
 const static  int RESERVED_VALUE_COUNT = 125;
 Attribute::Attribute(const string& attrName, Attribute::AttributeType type) :
-    mName(attrName), mIndex(-1), mType(type),mWeight(0.0), mValuesSize(1)
+    mName(attrName), mIndex(-1), mType(type),mWeight(0.0), mValuesSize(1), mValuesOrdered(false)
 {
 }
 
-Attribute::Attribute(const string& attrName, int nomialSize):
-    mName(attrName), mIndex(-1), mType(COMPACTNOMINAL),mWeight(0.0), mValuesSize(nomialSize)
+Attribute::Attribute(const string& attrName, int nomialSize, bool ordered):
+    mName(attrName), mIndex(-1), mType(COMPACTNOMINAL),mWeight(0.0),
+    mValuesSize(nomialSize), mValuesOrdered(ordered)
 {
 }
-Attribute::Attribute(const std::string& attrName, std::vector<std::string>& values):
-    mName(attrName), mValues(values), mIndex(-1), mType(NAMEDNOMINAL), mWeight(0.0)
+Attribute::Attribute(const std::string& attrName, std::vector<std::string>& values, bool ordered):
+    mName(attrName), mValues(values), mIndex(-1), mType(NAMEDNOMINAL),
+    mWeight(0.0) , mValuesOrdered(ordered)
 {
     if(mType == STRING ||  mType == NAMEDNOMINAL)
     {

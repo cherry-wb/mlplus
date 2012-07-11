@@ -9,18 +9,29 @@
 using namespace mlplus;
 using namespace std;
 
+int Expression::sOperatorTable[OP_UNKNOW] = {0};
+Expression::Expression(const char*str):mLexer(str)
+{
+    buildOperatorPriority();
+}
+double Expression::evaluate(const Scope& scope)
+{
+    parse(mLexer.getTokenHead(), mPostStack);
+    return evaluate(mPostStack, scope);
+}
 Expression::Expression()
 {
     buildOperatorPriority();
 }
 void Expression::parse(Token* head, vector<Token*>& postStack) const
 {
+    postStack.clear();
     stack<Token*> opStack;
     Token* top = NULL;
     while(head)
     {
         TokenType type = head->type;
-        if (Lexser::isOperant(type))
+        if (Lexer::isOperant(type))
         {
             postStack.push_back(head);
         }
@@ -31,8 +42,8 @@ void Expression::parse(Token* head, vector<Token*>& postStack) const
         else
         {
             top = opStack.top();
-            int topP = operatorTable[top->type];
-            int cur = operatorTable[type];
+            int topP = sOperatorTable[top->type];
+            int cur = sOperatorTable[type];
             if (type == OP_RIGHT) //for ()
             {
                 while(top->type != OP_LEFT)
@@ -69,7 +80,7 @@ void Expression::parse(Token* head, vector<Token*>& postStack) const
                         break;
                     }
                     top = opStack.top();
-                    topP = operatorTable[top->type];
+                    topP = sOperatorTable[top->type];
                 }
                 if (head->type != OP_COMMA)//for function expression, don't support a,b,c
                 {
@@ -161,6 +172,30 @@ bool Expression::verify(std::vector<Token*>& postStack) const
     return var == 1;
 }
 
+bool Expression::isLogicExpression() const
+{
+    if (mPostStack.empty())
+    {
+        return false;
+    }
+    Token* rb = mPostStack.back();
+    switch(rb->type)
+    {
+    case OP_NOT:
+    case OP_GE:
+    case OP_LE:
+    case OP_NE:
+    case OP_GT:
+    case OP_LS:
+    case OP_EQ:
+    case OP_AND:
+    case OP_OR:
+        return true;
+    default:
+        return false;
+    }
+    return false;
+}
 double Expression::evaluate(std::vector<Token*>& postStack, const Scope& scope)
 {
     std::vector<Token*>::const_iterator rb = postStack.begin();
@@ -444,60 +479,64 @@ double Expression::evaluate(std::vector<Token*>& postStack, const Scope& scope)
 }
 void  Expression::buildOperatorPriority()
 {
-    //"pow" "sin" "cos"] = "tan" "log" "exp" "int"
-    operatorTable[OP_POW] = 1;
-    operatorTable[OP_SIN] = 1;
-    operatorTable[OP_COS] = 1;
-    operatorTable[OP_TAN] = 1;
-    operatorTable[OP_LOG] = 1;
-    operatorTable[OP_EXP] = 1;
-    operatorTable[OP_INT] = 1;
-    //{">=" "<="] = "!= <>" ">" "<" "="}
-    operatorTable[OP_GE] = 7;
-    operatorTable[OP_LE] = 7;
-    operatorTable[OP_NE] = 8;
-    operatorTable[OP_GT] = 7;
-    operatorTable[OP_LS] = 7;
-    operatorTable[OP_EQ] = 8;
-    //and or not && ||
-    operatorTable[OP_AND] = 12;
-    operatorTable[OP_OR] = 13;
-    operatorTable[OP_NOT] = 2;
-    // + - * / %
-    operatorTable[OP_ADD_1] = 2;
-    operatorTable[OP_MINUS_1] = 2;
-    operatorTable[OP_ADD] = 5;
-    operatorTable[OP_MINUS] = 5;
-    operatorTable[OP_PLUS] = 4;
-    operatorTable[OP_DIV] =  4;
-    operatorTable[OP_MOD] = 4;
+    static bool init = false;
+    if (!init)
+    {
+        //"pow" "sin" "cos"] = "tan" "log" "exp" "int"
+        sOperatorTable[OP_POW] = 1;
+        sOperatorTable[OP_SIN] = 1;
+        sOperatorTable[OP_COS] = 1;
+        sOperatorTable[OP_TAN] = 1;
+        sOperatorTable[OP_LOG] = 1;
+        sOperatorTable[OP_EXP] = 1;
+        sOperatorTable[OP_INT] = 1;
+        //{">=" "<="] = "!= <>" ">" "<" "="}
+        sOperatorTable[OP_GE] = 7;
+        sOperatorTable[OP_LE] = 7;
+        sOperatorTable[OP_NE] = 8;
+        sOperatorTable[OP_GT] = 7;
+        sOperatorTable[OP_LS] = 7;
+        sOperatorTable[OP_EQ] = 8;
+        //and or not && ||
+        sOperatorTable[OP_AND] = 12;
+        sOperatorTable[OP_OR] = 13;
+        sOperatorTable[OP_NOT] = 2;
+        // + - * / %
+        sOperatorTable[OP_ADD_1] = 2;
+        sOperatorTable[OP_MINUS_1] = 2;
+        sOperatorTable[OP_ADD] = 5;
+        sOperatorTable[OP_MINUS] = 5;
+        sOperatorTable[OP_PLUS] = 4;
+        sOperatorTable[OP_DIV] =  4;
+        sOperatorTable[OP_MOD] = 4;
 
-    operatorTable[OP_ADD_EQ] = 15;
-    operatorTable[OP_MINUS_EQ] = 15;
-    operatorTable[OP_PLUS_EQ] = 15;
-    operatorTable[OP_DIV_EQ] = 15;
-    operatorTable[OP_MOD_EQ] = 15;
-    operatorTable[OP_COMMA] = 18;
+        sOperatorTable[OP_ADD_EQ] = 15;
+        sOperatorTable[OP_MINUS_EQ] = 15;
+        sOperatorTable[OP_PLUS_EQ] = 15;
+        sOperatorTable[OP_DIV_EQ] = 15;
+        sOperatorTable[OP_MOD_EQ] = 15;
+        sOperatorTable[OP_COMMA] = 18;
 
-    operatorTable[OP_ADD_ADD] = 2;
-    operatorTable[OP_MINUS_MINUS] = 2;
-    //()
-    operatorTable[OP_LEFT] = 100;
-    operatorTable[OP_RIGHT] = 100;
-    //bool
-    operatorTable[OP_TRUE] = 0;
-    operatorTable[OP_FALSE] = 0;
-    operatorTable[OP_STRING] = 0;
-    operatorTable[OP_CONST] = 0;
-    operatorTable[OP_VAR] = 0;
+        sOperatorTable[OP_ADD_ADD] = 2;
+        sOperatorTable[OP_MINUS_MINUS] = 2;
+        //()
+        sOperatorTable[OP_LEFT] = 100;
+        sOperatorTable[OP_RIGHT] = 100;
+        //bool
+        sOperatorTable[OP_TRUE] = 0;
+        sOperatorTable[OP_FALSE] = 0;
+        sOperatorTable[OP_STRING] = 0;
+        sOperatorTable[OP_CONST] = 0;
+        sOperatorTable[OP_VAR] = 0;
+        init = true;
+    }
 }
 
 double Expression::evaluate(const char* str, const Scope& scope)
 {
-    Lexser lex(str);
-    std::vector<Token*> postStack;
-    parse(lex.getTokenHead(), postStack);
-    return evaluate(postStack, scope);
+    mLexer.scan(str);
+    parse(mLexer.getTokenHead(), mPostStack);
+    return evaluate(mPostStack, scope);
 }
 double Expression::evaluate(const char* str)
 {

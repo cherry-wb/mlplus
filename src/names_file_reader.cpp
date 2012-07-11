@@ -5,16 +5,16 @@
 using namespace mlplus;
 using namespace std;
 
-NamesFileReader::AttributeDesc::AttributeDesc():
+AttributeDesc::AttributeDesc():
     type(0)
 {
 }
 
-NamesFileReader::AttributeDesc  NamesFileReader::getExplictAttrMeta(int i) const
+AttributeDesc  NamesFileReader::getExplictAttrMeta(int i) const
 {
     return mExplicitAttributeMeta[i];
 }
-NamesFileReader::AttributeDesc  NamesFileReader::getAttributeMeta(const string& name) const
+AttributeDesc  NamesFileReader::getAttributeMeta(const string& name) const
 {
     std::vector<AttributeDesc>::const_iterator it = mExplicitAttributeMeta.begin();
     for(; it != mExplicitAttributeMeta.end(); ++it)
@@ -149,7 +149,15 @@ bool NamesFileReader::translateValue()
         else if (0==it->value.compare(0,9,"[ordered]"))//grade: [ordered] low, medium, high.
         {
             it->value = it->value.substr(9);
-            it->type |= NAMEDNOMINAL;
+            if (isInteger(it->value))
+            {
+                it->type |= COMPACTNOMINAL;
+            }
+            else
+            {
+                it->type |= NAMEDNOMINAL;
+            }
+            it->type |= ORDERED;
         }
         else if (isInteger(it->value))
         {
@@ -229,8 +237,3 @@ void NamesFileReader::parseLine(const string& line)
         }
     }
 }
-Attribute* NamesFileReader::makeAttribute(int index) const
-{
-    return NULL;
-}
-

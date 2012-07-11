@@ -66,39 +66,39 @@ public:
         str[0] = '\0';
     }
 };
-class Lexser
+class Lexer
 {
 public:
-    Lexser();
-    Lexser(const char*);
-    virtual ~Lexser();
-    Token* append(Token* tail, Token* next) const;
-    Token* scan(const char* input) const;
-    static void freeTokenList(Token* head);
-    void registerTokenTable();
+    Lexer();
+    Lexer(const char*);
+    virtual ~Lexer();
+    Token* scan(const char* input);
     inline static bool validVariableChar(char c);
     inline static bool isOperator(TokenType);
     inline static bool isOperant(TokenType);
     bool constValue(char* value) const;
     inline Token* getTokenHead();
 private:
-    Token* mAHead;
+    void registerTokenTable();
+    static void freeTokenList(Token*& head);
+    static Token* append(Token* tail, Token* next);
+    Token* mHead;
     std::map<std::string, TokenType> mTokenTable;
 };
 
-inline Token*  Lexser::getTokenHead()
+inline Token*  Lexer::getTokenHead()
 {
-    return mAHead;
+    return mHead;
 }
-inline bool Lexser::validVariableChar(char c) 
+inline bool Lexer::validVariableChar(char c) 
 {
     return (c >= 'a' && c  <= 'z') || (c >= 'A' && c >= 'Z') || '_' == c || '.' == c || (c>='0' && c<= '9');
 }
-inline bool Lexser::isOperator(TokenType type) 
+inline bool Lexer::isOperator(TokenType type) 
 {
     return (type != OP_STRING && type != OP_VAR && type != OP_CONST && type != OP_FALSE && type != OP_TRUE);
 }
-inline bool  Lexser::isOperant(TokenType type)
+inline bool  Lexer::isOperant(TokenType type)
 {
     return !isOperator(type);
 }

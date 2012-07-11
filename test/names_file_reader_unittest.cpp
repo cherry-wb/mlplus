@@ -35,7 +35,7 @@ string str = "diagnosis.                     | the target attribute\n" \
     NamesFileReader reader;
     reader.read(ss);
 
-    NamesFileReader::AttributeDesc r = reader.getAttributeMeta("id");
+    AttributeDesc r = reader.getAttributeMeta("id");
     EXPECT_EQ(r.name,"id");
     EXPECT_EQ(r.value,"label");
     EXPECT_TRUE(NamesFileReader::testBit(r.type,NamesFileReader::LABEL));
@@ -45,13 +45,16 @@ string str = "diagnosis.                     | the target attribute\n" \
     EXPECT_EQ(r.name,"referral source");
     EXPECT_EQ(r.value,"WEST, STMW, SVHC, SVI, SVHD, other");
     EXPECT_FALSE(NamesFileReader::testBit(r.type,NamesFileReader::LABEL));
+    EXPECT_FALSE(NamesFileReader::testBit(r.type,NamesFileReader::ORDERED));
     EXPECT_FALSE(NamesFileReader::testBit(r.type,NamesFileReader::NUMERIC));
     EXPECT_TRUE(NamesFileReader::testBit(r.type,NamesFileReader::NAMEDNOMINAL));
+    EXPECT_EQ(r.type, (uint64_t)0x20);
 
     r = reader.getExplictAttrMeta(21);
     EXPECT_EQ(r.name,"diagnosis");
     EXPECT_EQ(r.value,"primary, compensated, secondary, negative");
     EXPECT_FALSE(NamesFileReader::testBit(r.type,NamesFileReader::LABEL));
+    EXPECT_FALSE(NamesFileReader::testBit(r.type,NamesFileReader::ORDERED));
     EXPECT_FALSE(NamesFileReader::testBit(r.type,NamesFileReader::NUMERIC));
     EXPECT_TRUE(NamesFileReader::testBit(r.type,NamesFileReader::NAMEDNOMINAL));
     EXPECT_TRUE(NamesFileReader::testBit(r.type,NamesFileReader::TARGET));
@@ -60,6 +63,7 @@ string str = "diagnosis.                     | the target attribute\n" \
     EXPECT_EQ(r.name,"fti");
     EXPECT_EQ(r.value,"TT4 / T4U");
     EXPECT_FALSE(NamesFileReader::testBit(r.type,NamesFileReader::LABEL));
+    EXPECT_FALSE(NamesFileReader::testBit(r.type,NamesFileReader::ORDERED));
     EXPECT_FALSE(NamesFileReader::testBit(r.type,NamesFileReader::NUMERIC));
     EXPECT_FALSE(NamesFileReader::testBit(r.type,NamesFileReader::NAMEDNOMINAL));
     EXPECT_FALSE(NamesFileReader::testBit(r.type,NamesFileReader::TARGET));

@@ -2,7 +2,7 @@
 #include <vector>
 #include "gtest/gtest.h"
 #include <iostream>
-#include "lexser.h"
+#include "lexer.h"
 #include "expression.h"
 #include "scope.h"
 using namespace std;
@@ -22,8 +22,8 @@ TEST(epressionTest, evaluateTest){
 }
 TEST(expressionTest, addTesting){
     string str = "-a + +b";
-    Lexser lexser(str.c_str());
-    Token* head = lexser.getTokenHead();
+    Lexer lexer(str.c_str());
+    Token* head = lexer.getTokenHead();
     Expression ex;
     std::vector<Token*> postExpression;
     ex.parse(head,  postExpression);
@@ -44,8 +44,8 @@ TEST(expressionTest, addTesting){
 
 TEST(expressionTest, abracketTesting){
     string str = "h*(d+e)";
-    Lexser lexser(str.c_str());
-    Token* head = lexser.getTokenHead();
+    Lexer lexer(str.c_str());
+    Token* head = lexer.getTokenHead();
     Expression ex;
     std::vector<Token*> postExpression;
     ex.parse(head,  postExpression);
@@ -59,8 +59,8 @@ TEST(expressionTest, abracketTesting){
 
 TEST(expressionTest, bracketTesting){
     string str = "a+b * c + h*(d+e)/sin(x)*cos(y)";
-    Lexser lexser(str.c_str());
-    Token* head = lexser.getTokenHead();
+    Lexer lexer(str.c_str());
+    Token* head = lexer.getTokenHead();
     char* op[] = {"a", "+","b", "*", "c","+","h","*","(","d","+","e",")","/","sin","(","x",")","*","cos","(","y",")"};
 
     Token* tail = head;

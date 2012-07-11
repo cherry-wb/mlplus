@@ -2,15 +2,14 @@
 #include <vector>
 #include "gtest/gtest.h"
 #include <iostream>
-#include "lexser.h"
-#include "lexser.h"
+#include "lexer.h"
 using namespace std;
 using namespace mlplus;
 
-TEST(lexserTest, addTesting){
+TEST(lexerTest, addTesting){
 
     string str = "-a + +b";
-    Lexser ex;
+    Lexer ex;
     Token* head = ex.scan(str.c_str());
     Token* tk = head;
     EXPECT_EQ(tk->type, OP_MINUS_1);
@@ -27,11 +26,10 @@ TEST(lexserTest, addTesting){
     tk = tk->next;
     EXPECT_EQ(tk->type, OP_VAR);
     EXPECT_STREQ(tk->str, "b");
-    ex.freeTokenList(head);
 }
-TEST(lexserTest, logicExpression){
+TEST(lexerTest, logicExpression){
     string str = "a and b or c + b > 0";
-    Lexser ex;
+    Lexer ex;
     Token* head = ex.scan(str.c_str());
     Token* tk = head;
     EXPECT_EQ(tk->type, OP_VAR);
@@ -66,12 +64,11 @@ TEST(lexserTest, logicExpression){
 
     tk = tk->next;
     EXPECT_TRUE(tk == 0);
-    ex.freeTokenList(head);
 }
 
-TEST(lexserTest, operatorExpression){
+TEST(lexerTest, operatorExpression){
     string str = "a + b*c + int(b)%c";
-    Lexser ex;
+    Lexer ex;
     Token* head = ex.scan(str.c_str());
     Token* tk = head;
     EXPECT_EQ(tk->type, OP_VAR);
@@ -123,12 +120,11 @@ TEST(lexserTest, operatorExpression){
     tk = tk->next;
     EXPECT_TRUE(tk == 0);
 
-    ex.freeTokenList(head);
 }
-TEST(lexserTest, functionTest){
+TEST(lexerTest, functionTest){
     string str = "int(log(sin(cos))) + sin(1)";
     char* op[] = {"int", "(", "log", "(", "sin", "(", "cos",")",")", ")", "+", "sin", "(", "1", ")"};
-    Lexser ex;
+    Lexer ex;
     Token* head = ex.scan(str.c_str());
     Token* tk = head;
     int i = 0;
@@ -138,13 +134,12 @@ TEST(lexserTest, functionTest){
         tk = tk->next;
         ++i;
     }
-    ex.freeTokenList(head);
 }
 
-TEST(lexserTest, stringTest){
+TEST(lexerTest, stringTest){
     string str = "fun == \"abc\" and c <1.2";
     char* op[] = {"fun", "==", "abc", "and", "c", "<", "1.2"};
-    Lexser ex;
+    Lexer ex;
     Token* head = ex.scan(str.c_str());
     Token* tk = head;
     int i = 0;
@@ -154,13 +149,12 @@ TEST(lexserTest, stringTest){
         tk = tk->next;
         ++i;
     }
-    ex.freeTokenList(head);
 }
 
-TEST(lexserTest, errorTest){
+TEST(lexerTest, errorTest){
     string str = "fun == \"\" or sin(x ==\"ab ";
     char* op[] = {"fun", "==", "", "or", "sin", "(", "x", "==", "\"ab "};
-    Lexser ex;
+    Lexer ex;
     Token* head = ex.scan(str.c_str());
     Token* tk = head;
     int i = 0;
@@ -170,12 +164,11 @@ TEST(lexserTest, errorTest){
         tk = tk->next;
         ++i;
     }
-    ex.freeTokenList(head);
 }
-TEST(lexserTest, allSymbleTable){
+TEST(lexerTest, allSymbleTable){
     string str = "+= -= *= %= ++";
     char* op[] = {"+=", "-=", "*=", "%=", "++"};
-    Lexser ex;
+    Lexer ex;
     Token* head = ex.scan(str.c_str());
     Token* tk = head;
     int i = 0;
@@ -185,5 +178,4 @@ TEST(lexserTest, allSymbleTable){
         tk = tk->next;
         ++i;
     }
-    ex.freeTokenList(head);
 }

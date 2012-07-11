@@ -78,6 +78,7 @@ protected:
     double mWeight;
     Range mRange;
     int mValuesSize;
+    bool mValuesOrdered;
 public:
 
     /** 
@@ -90,32 +91,42 @@ public:
     /*
      * @brief construct a compact nominal attribute with size
      * @param attrName The name of the attribute
-    n* @param nonimalSize the size of the nominal attribute, means the value would range [0, nominalSize),
+     * @param nonimalSize the size of the nominal attribute, means the value would range [0, nominalSize),
      *        which elements are all interger number
+     * @param ordered the multi-nomial value type is ordered. e.x: low,mid,high
      */
-    Attribute(const std::string& attrName, int nominalSize);
+    Attribute(const std::string& attrName, int nominalSize, bool ordered = false);
     /*
      * @brief construct a compact named nominal
      * @param attrName The name of the attribute
      * @param values the named nomial values with string types
+     * @param ordered the multi-nomial value type is ordered. e.x: low,mid,high
      */
-    Attribute(const std::string& attrName, std::vector<std::string>& values);
+    Attribute(const std::string& attrName, std::vector<std::string>& values, bool ordered = false);
     virtual ~Attribute();
-    const std::string&  getName() const
+    inline const std::string&  getName() const
     {
         return mName;
     }
-    AttributeType getType() const
+    inline AttributeType getType() const
     {
         return mType;
     }
-    double getWeight() const
+    inline double getWeight() const
     {
         return mWeight;
     }
-    void setWeight(double weight) 
+    inline void setWeight(double weight) 
     {
         mWeight = weight;
+    }
+    inline void setOrdered(bool ord) 
+    {
+        mValuesOrdered = ord;
+    }
+    inline bool isOrdered() const
+    {
+        return mValuesOrdered;
     }
     inline bool isNamedNominal() const
     {
@@ -145,35 +156,35 @@ public:
     { 
         return mIndex;
     }
-    const Range& getRange() const
+    inline const Range& getRange() const
     {
         return mRange;
     } 
-    double getLowerBound() const
+    inline double getLowerBound() const
     {
         return mRange.lowerBound;
     }
-    bool lowerBoundIsOpen() const
+    inline bool lowerBoundIsOpen() const
     {
         return mRange.lowerBoundIsOpen;
     }
-    double getUpperBound() const
+    inline double getUpperBound() const
     {
         return mRange.upperBound;
     }
-    bool upperBoundIsOpen() const
+    inline bool upperBoundIsOpen() const
     {
         return mRange.upperBoundIsOpen;
     }
-    Attribute* clone(void) const
+    inline Attribute* clone(void) const
     {
         return new Attribute(*this);
     }
-    const std::string& getValue(int index)
+    inline const std::string& getValue(int index)
     {
         return mValues.at(index);
     }
-    bool setValue(unsigned int index, const std::string& s)
+    inline bool setValue(unsigned int index, const std::string& s)
     {
         if (index < mValues.size())
         {
@@ -183,17 +194,17 @@ public:
         }
         return false;
     }
-    void addValue(const std::string& s)
+    inline void addValue(const std::string& s)
     {
         mValue2Index[s] = mValues.size();
         mValues.push_back(s);
         mValuesSize = mValue2Index.size();
     }
-    void reserveValues(size_t storage)
+    inline void reserveValues(size_t storage)
     {
         return mValues.reserve(storage);
     }
-    int numValues() const
+    inline int numValues() const
     {
         return mValuesSize;/*for named nomial value count  = mValues.size();*/
     }

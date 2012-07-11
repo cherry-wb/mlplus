@@ -1,29 +1,29 @@
-#include "lexser.h"
+#include "lexer.h"
 #include <map>
 #include <string>
 using namespace mlplus;
 using namespace std;
 // 1 -->  '>'
 
-Lexser::Lexser():mAHead(NULL)
+Lexer::Lexer():mHead(NULL)
 {
     registerTokenTable();
 }
 
-Lexser::~Lexser()
+Lexer::~Lexer()
 {
-    if (mAHead)
+    if (mHead)
     {
-        freeTokenList(mAHead);
+        freeTokenList(mHead);
     }
 }
-Lexser::Lexser(const char* str):mAHead(NULL)
+Lexer::Lexer(const char* str):mHead(NULL)
 {
     //TODO  init once
     registerTokenTable();
-    mAHead = scan(str);
+    mHead = scan(str);
 }
-void Lexser::registerTokenTable()
+void Lexer::registerTokenTable()
 {
     mTokenTable["pow"] = OP_POW;
     mTokenTable["sin"] = OP_SIN;    
@@ -69,7 +69,7 @@ void Lexser::registerTokenTable()
     mTokenTable[")"] = OP_RIGHT;
     mTokenTable[","] = OP_COMMA;
 }
-Token* Lexser::append(Token* tail, Token* next) const
+Token* Lexer::append(Token* tail, Token* next)
 {
     if (tail) 
     {
@@ -82,7 +82,7 @@ Token* Lexser::append(Token* tail, Token* next) const
     }
     return tail;
 }
-void Lexser::freeTokenList(Token* head) 
+void Lexer::freeTokenList(Token*& head) 
 {
     while(head)
     {
@@ -91,10 +91,10 @@ void Lexser::freeTokenList(Token* head)
         head = t;
     }
 }
-Token*  Lexser::scan(const char* str) const
+Token*  Lexer::scan(const char* str)
 {
     int len = 0;
-    Token* head = NULL;
+    freeTokenList(mHead);
     Token* tail = NULL;
     const char *p = str;
     char c = *p;
@@ -142,7 +142,7 @@ Token*  Lexser::scan(const char* str) const
                     strncpy(t->str, p + 1, len - 1);
                     t->str[len - 1] = '\0';
                     tail = append(tail, t);
-                    head = head == NULL ? tail : head;
+                    mHead = mHead == NULL ? tail : mHead;
                     p = p + len;
                     len = 0;//skip ''
                 }
@@ -197,7 +197,7 @@ Token*  Lexser::scan(const char* str) const
                 }
             }
             tail = append(tail, t);
-            head = head == NULL ? tail : head;
+            mHead = mHead == NULL ? tail : mHead;
             p += len;
         }
         else
@@ -206,10 +206,10 @@ Token*  Lexser::scan(const char* str) const
         }
         len = 0;
     }
-    return head;
+    return mHead;
 }
 
-bool Lexser::constValue(char* value) const
+bool Lexer::constValue(char* value) const
 {
     char *p = value;
     bool r = false;

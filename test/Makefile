@@ -24,15 +24,20 @@ GMOCK_HEADERS = $(GMOCK_DIR)/include/gmock/*.h \
 SRC = $(PROJECT_DIR)/src
 INCLUDE = $(PROJECT_DIR)/include
 
-all:names_reader_unittest string_utility_unittest attribute_unittest instance_unittest special_function_unittest estimator_unittest  naive_bayes_unittest expression_unittest datetime_unittest
-    
+all:names_reader_unittest string_utility_unittest attribute_unittest instance_unittest special_function_unittest estimator_unittest  naive_bayes_unittest expression_unittest datetime_unittest attribute_spec_unittest decision_tree_unittest
+
+attribute_spec_unittest:attribute_spec_unittest.cpp  $(PROJECT_DIR)/src/attribute_spec.cpp $(PROJECT_DIR)/src/expression.cpp $(PROJECT_DIR)/src/lexer.cpp $(PROJECT_DIR)/src/attribute.cpp $(PROJECT_DIR)/src/scope.cpp $(PROJECT_DIR)/src/names_file_reader.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lgmock -lgmock_main -lpthread $^ -o $@
+
+decision_tree_unittest:decision_tree_unittest.cpp $(PROJECT_DIR)/src/decision_tree.cpp $(PROJECT_DIR)/src/attribute_spec.cpp $(PROJECT_DIR)/src/expression.cpp $(PROJECT_DIR)/src/lexer.cpp $(PROJECT_DIR)/src/attribute.cpp $(PROJECT_DIR)/src/scope.cpp $(PROJECT_DIR)/src/names_file_reader.cpp $(PROJECT_DIR)/src/log.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lgmock -lgmock_main -lpthread $^ -o $@
 names_reader_unittest: names_file_reader_unittest.cpp $(PROJECT_DIR)/src/names_file_reader.cpp $(PROJECT_DIR)/src/attribute.cpp
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lgmock -lgmock_main -lpthread $^ -o $@
 
 datetime_unittest: datetime_unittest.cpp $(PROJECT_DIR)/src/datetime.cpp
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lgmock -lgmock_main -lpthread $^ -o $@
 
-expression_unittest:  lexser_unittest.cpp expression_unittest.cpp $(SRC)/expression.cpp $(SRC)/lexser.cpp $(SRC)/scope.cpp
+expression_unittest:  lexer_unittest.cpp expression_unittest.cpp $(SRC)/expression.cpp $(SRC)/lexer.cpp $(SRC)/scope.cpp
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $^ -lgmock -lgmock_main -lpthread -o $@
 
 string_utility_unittest: string_trim_unittest.cpp string_convert_unittest.cpp
