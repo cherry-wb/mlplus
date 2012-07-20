@@ -18,6 +18,8 @@ struct AttributeDesc
 class NamesFileReader
 {
 public:
+    NamesFileReader(const std::string& filename);
+    NamesFileReader();
     const static uint64_t NUMERIC = 0x01;
     const static uint64_t DATE = 0x02;
     const static uint64_t TIME = 0x04;

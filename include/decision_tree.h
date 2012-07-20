@@ -8,8 +8,9 @@ namespace mlplus
 typedef enum
 {
     dtnLeaf,
-    dtnContinuous,
     dtnDiscrete,
+    dtnContinuous,
+    dtnSubset,
     dtnGrowing
 } TreeNodeType;
 class AttributeSpec;
@@ -37,7 +38,7 @@ private:
     float* mClassDist;
     float mCases;
 public:
-    DecisionTreePtr newTree(AttributeSpec* spec);
+    static DecisionTreePtr newTree(AttributeSpec* spec);
     void free();
     DecisionTreePtr clone();
     int isLeaf();
@@ -65,9 +66,10 @@ public:
     int  getMostCommonClass();
     void setGrowingData(void *data);
     void *getGrowingData();
-    DecisionTreePtr readC5Bin(std::istream& in, AttributeSpec* spec);
-    DecisionTreePtr readC5Text(std::istream& in, AttributeSpec* spec);
-    DecisionTreePtr read(std::istream& in, AttributeSpec* spec);
+    static DecisionTreePtr readC5(std::istream& in, AttributeSpec* spec);
+    static DecisionTreePtr readC5Bin(std::istream& in,AttributeSpec* spec);
+    static DecisionTreePtr readC5Text(std::istream& in, AttributeSpec* spec);
+    static DecisionTreePtr read(std::istream& in, AttributeSpec* spec);
     void write(std::ostream& out);
     void print(std::ostream& out);
     void printStats(std::ostream& out);
@@ -85,7 +87,7 @@ private:
     static void printStatHelper(DecisionTreePtr dt, long *leavesAtLevel, long *leaves, int level, int maxLevel);
     static int which(char* val, char** list, int first, int last);
     static Set64 makeSubset(char* PropVal, Attribute* attr);
-    int readProp(std::istream& is, char *delim, char* propName, char* proVal);
+    static int readProp(std::istream& is, char *delim, char* propName, char* proVal);
 };
 }
 #endif /* DECISIONTREEH */

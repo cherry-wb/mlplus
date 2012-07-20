@@ -1,0 +1,19 @@
+IS_FRAUD.                       | the target attribute
+
+Record_ID:                                              label.
+
+IS_FRAUD:                                               w, b.
+
+| url:               continuous.
+| label:             continuous.
+
+outdegree:         continuous.
+pagerank:          continuous.
+reciprocity:       continuous.
+trustrank:         continuous.
+indgree:           continuous.
+site_neighboures:  continuous.
+assortativity:     continuous.
+avg_in_of_out:     continuous.
+avg_out_of_in:     continuous.
+pr_sigma:          continuous.

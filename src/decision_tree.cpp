@@ -1,3 +1,4 @@
+#include <cstdlib>
 #include "log.h"
 #include "decision_tree.h"
 #include "attribute_spec.h"
@@ -63,12 +64,11 @@ DecisionTreePtr DecisionTree::newTree(AttributeSpec* spec)
 
 void DecisionTree::free()
 {
-    int i;
     if(mChildren)
     {
         if(mNodeType == dtnDiscrete || mNodeType == dtnContinuous)
         {
-            for(i = mForks ; i >= 0 ; i--)
+            for(int i = 0 ; i < mForks ; ++i)
             {
                 mChildren[i]->free();
             }
@@ -122,6 +122,8 @@ int DecisionTree::isTreeGrowing()
         return 0;
     case dtnGrowing:
         return 1;
+    case dtnSubset:
+        return 0;
     case dtnContinuous:
     case dtnDiscrete:
         for(i = 0 ; i < mForks ; i++)
@@ -262,24 +264,8 @@ DecisionTreePtr DecisionTree::oneStepClassify(IInstance* e)
         }
         else
         {
-            int target = 0;
-            int disvalue = int(value);
-            if (disvalue != mForks)
-            {
-                for (int i = 0; i < mForks; ++i)
-                {
-                    if (testBit(mSubset[i], disvalue))
-                    {
-                        target = i;
-                        break;
-                    }
-                }
-            }
-            else
-            {
-                target = disvalue;
-            }
-            return mChildren[target];
+            int disvalue = int(value) + 1;
+            return mChildren[disvalue];
         }
     }
     else if(mNodeType == dtnContinuous)
@@ -291,14 +277,27 @@ DecisionTreePtr DecisionTree::oneStepClassify(IInstance* e)
         }
         else if(value >= mSplitThreshold)
         {
-            return mChildren[1];
+            return mChildren[2];
         }
         else     /* the value is < the threshold */
         {
-            return mChildren[0];
+            return mChildren[1];
         }
     }
-
+    if(mNodeType == dtnSubset)
+    {
+        int target = 0;
+        int disvalue = int(value);
+        for (int i = 0; i < mForks; ++i)
+        {
+            if (testBit(mSubset[i], disvalue))
+            {
+                target = i;
+                break;
+            }
+        }
+        return mChildren[disvalue];
+    }
     return this;
 }
 
@@ -453,11 +452,11 @@ void DecisionTree::printHelper(DecisionTreePtr dt, ostream& out, int indent)
     else if(dt->mNodeType == dtnDiscrete)
     {
         Attribute* attr = dt->mAttributeSpec->attributeAt(dt->mSplitAttribute);
-        out << "(split on " << attr->getName() << "\n";
-        for(i = 0 ; i < dt->mForks; i++)
+        out << "(split on " << attr->getName() << "\t";
+        for(i = 1 ; i < dt->mForks; i++)
         {
             _printSpaces(out, indent + 1);
-            out <<  attr->getValue(i) << "\n";
+            out <<  dt->mSplitThreshold << "\n";
             printHelper(dt->mChildren[i], out, indent + 2);
         }
         _printSpaces(out, indent);
@@ -470,11 +469,11 @@ void DecisionTree::printHelper(DecisionTreePtr dt, ostream& out, int indent)
         /* left child */
         _printSpaces(out, indent + 1);
         out << "< " << dt->mSplitThreshold << "\n";
-        printHelper(dt->mChildren[0], out, indent + 2);
+        printHelper(dt->mChildren[1], out, indent + 2);
         /* right child */
         _printSpaces(out, indent + 1);
         out << ">= " << dt->mSplitThreshold << "\n";
-        printHelper(dt->mChildren[1], out, indent + 2);
+        printHelper(dt->mChildren[2], out, indent + 2);
         _printSpaces(out, indent);
         out << ")\n";
     }
@@ -539,6 +538,18 @@ void DecisionTree::printStats(ostream& out)
     out << "\n";
 }
 
+DecisionTreePtr DecisionTree::readC5(istream& in, AttributeSpec* spec)
+{
+    int tag;
+    in.read((char*)&tag, sizeof(int));
+    if (memcmp((char *)&tag, "id=", 3) == 0)
+    {
+        in.seekg (0, ios::beg);
+        return readC5Text(in, spec);
+    }
+    in.seekg(0, ios::beg);
+    return readC5Bin(in, spec);
+}
 DecisionTreePtr DecisionTree::readC5Bin(istream& in, AttributeSpec* spec)
 {
     int i;
@@ -608,7 +619,6 @@ int DecisionTree::readProp(istream& is, char *delim, char* propName, char* propV
         *p++ = c;
     }
     *p = '\00';
-
     for(p = propVal ; ((c = is.get()) != ' ' && c != '\n') || Quote;)
     {
         if(c == EOF)
@@ -650,7 +660,7 @@ DecisionTreePtr DecisionTree::readC5Text(istream& in, AttributeSpec* spec)
     int     X;
     double  XD;
     int  classCount = spec->numTarget();
-    DecisionTreePtr pTree = new DecisionTree();
+    DecisionTreePtr pTree = newTree(spec);
     char propName[128];
     char propVal[256];
     string str(propVal);
@@ -710,16 +720,19 @@ DecisionTreePtr DecisionTree::readC5Text(istream& in, AttributeSpec* spec)
             }
             break;
         case ELTSP:
-            if(NULL == mSubset)
+            if(NULL == pTree->mSubset)
             {
                 pTree->mSubset = new Set64[pTree->mForks];
             }
             ++subset;
             pTree->mSubset[subset] = makeSubset(propVal, spec->attributeAt(pTree->mSplitAttribute));
             break;
+        case IDP:
+        case ENTRIESP:
+            delim = ' '; //header
+            break;
         }
-    }
-    while(delim == ' ');
+    } while(delim == ' ');
     if(pTree->mClassDist)
     {
         pTree->mErrors = pTree->mCases - (int)pTree->mClassDist[pTree->mMyClass];
@@ -730,7 +743,7 @@ DecisionTreePtr DecisionTree::readC5Text(istream& in, AttributeSpec* spec)
     }
     if(pTree->mNodeType != dtnLeaf)
     {
-        //T->Branch = AllocZero(T->Forks + 1, Tree);
+        pTree->mChildren = new DecisionTreePtr[pTree->mForks];
         for(v = 0; v < pTree->mForks; ++v)
         {
             pTree->mChildren[v] = readC5Text(in, spec);
@@ -770,8 +783,10 @@ DecisionTreePtr DecisionTree::read(istream& in,  AttributeSpec* spec)
         in.read((char*)&forks, sizeof(int));
         for(i = 0 ; i < forks ; i++)
         {
-            dt->mChildren[i] = (readC5Text(in, spec));
+            dt->mChildren[i] = read(in, spec);
         }
+        break;
+    case dtnSubset:
         break;
     }
     return dt;
@@ -799,5 +814,8 @@ void DecisionTree::write(ostream& out)
             mChildren[i]->write(out);
         }
         break;
+    case dtnSubset:
+        break;
     }
+
 }

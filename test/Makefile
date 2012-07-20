@@ -3,7 +3,7 @@ GMOCK_DIR = ../external
 # Where to find user code.
 
 # Flags passed to the preprocessor.
-CPPFLAGS +=  -I$(GMOCK_DIR)/include -I$(PROJECT_DIR)/include -L$(GMOCK_DIR)/lib
+CPPFLAGS +=  -I$(GMOCK_DIR)/include -I$(PROJECT_DIR)/include -I$(PROJECT_DIR)/src/ -L$(GMOCK_DIR)/lib -L.
 
 # Flags passed to the C++ compiler.
 CXXFLAGS += -g -Wall -Wextra 
@@ -24,44 +24,56 @@ GMOCK_HEADERS = $(GMOCK_DIR)/include/gmock/*.h \
 SRC = $(PROJECT_DIR)/src
 INCLUDE = $(PROJECT_DIR)/include
 
-all:names_reader_unittest string_utility_unittest attribute_unittest instance_unittest special_function_unittest estimator_unittest  naive_bayes_unittest expression_unittest datetime_unittest attribute_spec_unittest decision_tree_unittest
+SRCS=abstract_instance.cpp instance.cpp  attribute.cpp instance_container.cpp attribute_container.cpp special_functions.cpp estimator.cpp  normal_estimator.cpp discrete_estimator.cpp binary_estimator.cpp dataset.cpp expression.cpp scope.cpp lexer.cpp names_file_reader.cpp attribute_spec.cpp datetime.cpp naive_bayes.cpp decision_tree.cpp log.cpp
+OBJ=$(SRCS:.cpp=.o)
 
-attribute_spec_unittest:attribute_spec_unittest.cpp  $(PROJECT_DIR)/src/attribute_spec.cpp $(PROJECT_DIR)/src/expression.cpp $(PROJECT_DIR)/src/lexer.cpp $(PROJECT_DIR)/src/attribute.cpp $(PROJECT_DIR)/src/scope.cpp $(PROJECT_DIR)/src/names_file_reader.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lgmock -lgmock_main -lpthread $^ -o $@
+all:$(OBJ) libmlplus_common.a names_reader_unittest string_utility_unittest attribute_unittest instance_unittest special_function_unittest estimator_unittest  naive_bayes_unittest expression_unittest datetime_unittest attribute_spec_unittest decision_tree_unittest text_parser_unittest
 
-decision_tree_unittest:decision_tree_unittest.cpp $(PROJECT_DIR)/src/decision_tree.cpp $(PROJECT_DIR)/src/attribute_spec.cpp $(PROJECT_DIR)/src/expression.cpp $(PROJECT_DIR)/src/lexer.cpp $(PROJECT_DIR)/src/attribute.cpp $(PROJECT_DIR)/src/scope.cpp $(PROJECT_DIR)/src/names_file_reader.cpp $(PROJECT_DIR)/src/log.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lgmock -lgmock_main -lpthread $^ -o $@
-names_reader_unittest: names_file_reader_unittest.cpp $(PROJECT_DIR)/src/names_file_reader.cpp $(PROJECT_DIR)/src/attribute.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lgmock -lgmock_main -lpthread $^ -o $@
+%.o: $(SRC)/%.cpp 
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $< -o $@
 
-datetime_unittest: datetime_unittest.cpp $(PROJECT_DIR)/src/datetime.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lgmock -lgmock_main -lpthread $^ -o $@
+libmlplus_common.a: $(OBJ) 
+	$(AR) rcs $@ $^ 
 
-expression_unittest:  lexer_unittest.cpp expression_unittest.cpp $(SRC)/expression.cpp $(SRC)/lexer.cpp $(SRC)/scope.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $^ -lgmock -lgmock_main -lpthread -o $@
+text_parser_unittest: text_parser_unittest.cpp $(SRC)/io/text_parser.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lgmock -lgmock_main -lpthread $^ -lmlplus_common -o $@
+
+attribute_spec_unittest:attribute_spec_unittest.cpp 
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lgmock -lgmock_main -lpthread  $^ -lmlplus_common -o $@
+
+decision_tree_unittest:decision_tree_unittest.cpp $(SRC)/io/text_parser.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lgmock -lgmock_main -lpthread $^ -lmlplus_common -o $@
+names_reader_unittest: names_file_reader_unittest.cpp 
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lgmock -lgmock_main -lpthread $^ -lmlplus_common -o $@
+
+datetime_unittest: datetime_unittest.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lgmock -lgmock_main -lpthread $^ -lmlplus_common -o $@
+
+expression_unittest:  lexer_unittest.cpp 
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $^ -lgmock -lgmock_main -lpthread -lmlplus_common -o $@
 
 string_utility_unittest: string_trim_unittest.cpp string_convert_unittest.cpp
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lgmock -lgmock_main -lpthread $^ -o $@
 
-attribute_unittest: attribute_unittest.cpp  $(PROJECT_DIR)/src/attribute.cpp $(PROJECT_DIR)/include/attribute.h
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lgmock -lgmock_main -lpthread $^ -o $@
+attribute_unittest: attribute_unittest.cpp 
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lgmock -lgmock_main -lpthread $^ -lmlplus_common -o $@
 
-instance_unittest: instance_unittest.cpp $(SRC)/abstract_instance.cpp $(SRC)/instance.cpp  $(SRC)/attribute.cpp $(SRC)/dataset.cpp $(SRC)/instance_container.cpp $(SRC)/attribute_container.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lgmock -lgmock_main -lpthread $^ -o $@
+instance_unittest: instance_unittest.cpp 
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lgmock -lgmock_main -lpthread $^ -lmlplus_common -o $@
 
-special_function_unittest: special_function_unittest.cpp $(SRC)/special_functions.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lgmock -lgmock_main -lpthread $^ -o $@
+special_function_unittest: special_function_unittest.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lgmock -lgmock_main -lpthread $^ -lmlplus_common -o $@
 
-estimator_unittest: estimator_unittest.cpp $(SRC)/estimator.cpp  $(SRC)/normal_estimator.cpp $(SRC)/discrete_estimator.cpp $(SRC)/special_functions.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lgmock -lgmock_main -lpthread $^ -o $@
+estimator_unittest: estimator_unittest.cpp 
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lgmock -lgmock_main -lpthread $^ -lmlplus_common -o $@
 
-naive_bayes_unittest: naive_bayes_unittest.cpp $(SRC)/naive_bayes.cpp $(SRC)/abstract_instance.cpp $(SRC)/instance.cpp  $(SRC)/attribute.cpp $(SRC)/dataset.cpp $(SRC)/instance_container.cpp $(SRC)/attribute_container.cpp $(SRC)/special_functions.cpp $(SRC)/estimator.cpp  $(SRC)/binary_estimator.cpp $(SRC)/normal_estimator.cpp $(SRC)/discrete_estimator.cpp $(SRC)/special_functions.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lgmock -lgmock_main -lpthread $^ -o $@
+naive_bayes_unittest: naive_bayes_unittest.cpp 
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lgmock -lgmock_main -lpthread $^ -lmlplus_common -o $@
 
 
 clean :
 	rm -f $(TESTS) *.o
 	rm -f $(TESTS) *_unittest
-
+	rm -f *.a
 
 

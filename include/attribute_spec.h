@@ -18,19 +18,43 @@ public:
     inline int classNo(char* className) const;
     int numTarget() const;
     int numAttributes() const;
-    int mTargetIndex; 
+    int mTargetIndicator; 
     Attribute* makeAttribute(const AttributeDesc& desc) const;
     Expression* makeExpression(const AttributeDesc& desc) const;
     Attribute* attributeAt(int index);
-    const std::vector<Attribute*>& attributesVector() const;
+    inline const std::vector<Attribute*>& attributesVector() const;
+    inline const std::vector<Expression*>& expressionVector() const; 
     int findIndex(const std::string& name) const;
+    inline unsigned int implictAttributeCount() const;
+    inline unsigned int explictAttributeCount() const;
+    inline bool isTarget(Attribute*) const;
 private:
     std::vector<Expression*> mImplictExpression;
     std::vector<Attribute*> mAttributes;
 };
+inline bool AttributeSpec::isTarget(Attribute* at) const
+{
+    if (at)
+    {
+        return at->getIndex() == mAttributes[mTargetIndicator]->getIndex();
+    }
+    return false;
+}
+inline unsigned int  AttributeSpec::implictAttributeCount() const
+{
+    return mImplictExpression.size();
+}
+inline unsigned int  AttributeSpec::explictAttributeCount() const
+{
+    return mAttributes.size() - implictAttributeCount();
+}
 inline const std::vector<Attribute*>& AttributeSpec::attributesVector() const
 {
     return mAttributes;
+}
+inline const std::vector<Expression*>&  AttributeSpec::expressionVector() const
+{
+    return  mImplictExpression;
 }
 inline  int  AttributeSpec::numAttributes() const
 {
@@ -42,16 +66,16 @@ inline Attribute* AttributeSpec::attributeAt(int index)
 }
 inline void AttributeSpec::setTarget(int index)
 {
-    mTargetIndex = index;
+    mTargetIndicator = index;
 }
 inline int  AttributeSpec::getTarget() const
 {
-    return mTargetIndex;
+    return mTargetIndicator;
 }
 
 inline int AttributeSpec::classNo(char* className) const
 { 
-    return mAttributes[mTargetIndex]->indexOfValue(className);
+    return mAttributes[mTargetIndicator]->indexOfValue(className);
 }
 }
 #endif

@@ -1,12 +1,13 @@
 #include <cassert>
 #include <vector>
+#include <algorithm>
 #include "attribute_spec.h"
 #include "attribute.h"
 #include "expression.h"
 #include "string_utility.h"
 using namespace mlplus;
 using namespace std;
-AttributeSpec::AttributeSpec():mTargetIndex(-1)
+AttributeSpec::AttributeSpec():mTargetIndicator(-1)
 {
 }
 AttributeSpec::~AttributeSpec()
@@ -35,7 +36,7 @@ AttributeSpec::~AttributeSpec()
 
 int AttributeSpec::numTarget() const
 {
-    return mAttributes.at(mTargetIndex)->numValues();
+    return mAttributes.at(mTargetIndicator)->numValues();
 }
 AttributeSpec::AttributeSpec(NamesFileReader& reader)
 {
@@ -54,7 +55,7 @@ AttributeSpec::AttributeSpec(NamesFileReader& reader)
         mAttributes.push_back(at);
         if (NamesFileReader::testBit(exIt->type, NamesFileReader::TARGET))
         {
-            mTargetIndex = exIt - explict.begin();
+            mTargetIndicator = exIt - explict.begin();
         }
     }
     //
@@ -110,6 +111,11 @@ Attribute* AttributeSpec::makeAttribute(const AttributeDesc& desc) const
         vector<string> vec;
         split(desc.value, vec, ",");
         assert(vec.size() > 1);
+        vector<string>::iterator it = vec.begin();
+        for(; it != vec.end(); ++it)
+        {
+            mlplus::trim(*it);
+        }
         bool order = (NamesFileReader::testBit(desc.type, NamesFileReader::ORDERED));
         return new Attribute(desc.name, vec, order); 
     }

@@ -10,6 +10,13 @@ AttributeDesc::AttributeDesc():
 {
 }
 
+NamesFileReader::NamesFileReader(const std::string& filename)
+{
+    read(filename);
+}
+NamesFileReader::NamesFileReader()
+{
+}
 AttributeDesc  NamesFileReader::getExplictAttrMeta(int i) const
 {
     return mExplicitAttributeMeta[i];
@@ -186,7 +193,7 @@ void NamesFileReader::parseLine(const string& line)
         AttributeDesc desc;
         if (result.size() == 1)//target attribute
         {
-            desc.name = trimCopy(result[0]);
+            desc.name =  tolowerCopy(trimCopy(result[0]));
             if (*desc.name.rbegin() == '.')
             {
                 desc.name.resize(desc.name.size() - 1);
