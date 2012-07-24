@@ -20,8 +20,8 @@ TEST(decisionTreeTest, smock) {
     {
         IInstance* instance = pData->instanceAt(i);
         Attribute* attr = pData->targetAttribute();
-        //cout << attr->getValue(instance->targetValue()) <<" " <<  attr->getValue(ptr->classify(instance)) << endl;
-        ptr->classify(instance);
+        cout << attr->getValue(instance->targetValue()) <<" " <<  attr->getValue(ptr->classify(instance)) << endl;
+        //ptr->classify(instance);
     }
     ptr->free();
     delete pData;

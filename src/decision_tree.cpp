@@ -206,7 +206,7 @@ void DecisionTree::splitOnDiscreteAttribute(int attNum)
     int i;
     mNodeType = dtnDiscrete;
     mSplitAttribute = attNum;
-    Attribute* attr = mAttributeSpec->attributeAt(i);
+    Attribute* attr = mAttributeSpec->findAttribute(mSplitAttribute);
     resetChild(attr->numValues());
     for(i = 0 ; i < mForks; i++)
     {
@@ -231,10 +231,10 @@ void DecisionTree::splitOnContinuousAttribute(int attNum, float threshold)
     mNodeType = dtnContinuous;
     mSplitAttribute = attNum;
     mSplitThreshold = threshold;
-    resetChild(2);
-    mChildren = new DecisionTreePtr[mForks];
-    mChildren[0] = newTree(mAttributeSpec);
+    resetChild(3);//default,<= , >
+    mChildren[0] = newTree(mAttributeSpec);//default
     mChildren[1] = newTree(mAttributeSpec);
+    mChildren[2] = newTree(mAttributeSpec);
 }
 
 int DecisionTree::getChildCount()
@@ -246,7 +246,6 @@ DecisionTreePtr DecisionTree::getChild(int index)
 {
     return mChildren[index];
 }
-
 
 DecisionTreePtr DecisionTree::oneStepClassify(IInstance* e)
 {
@@ -275,7 +274,7 @@ DecisionTreePtr DecisionTree::oneStepClassify(IInstance* e)
             /* HERE do something smarter */
             return mChildren[0];
         }
-        else if(value >= mSplitThreshold)
+        else if(value > mSplitThreshold)
         {
             return mChildren[2];
         }
@@ -437,49 +436,56 @@ static void _printSpaces(ostream& out, int num)
     int i;
     for(i = 0 ; i < num ; i++)
     {
-        out << " ";
+        if (i > num - 4)
+        {
+            out << ".";
+        }
+        else if (i % 4 == 0)
+        {
+            out << ":";
+        }
+        else
+        {
+            out << " ";
+        }
     }
 }
 
 void DecisionTree::printHelper(DecisionTreePtr dt, ostream& out, int indent)
 {
     int i;
-    _printSpaces(out, indent);
     if(dt->mNodeType == dtnLeaf)
     {
-        out << "(leaf:" << dt->mMyClass << "\n";
+        out << " " << dt->mMyClass << "\n";
     }
     else if(dt->mNodeType == dtnDiscrete)
     {
-        Attribute* attr = dt->mAttributeSpec->attributeAt(dt->mSplitAttribute);
-        out << "(split on " << attr->getName() << "\t";
+        Attribute* attr = dt->mAttributeSpec->findAttribute(dt->mSplitAttribute);
+        out << "" << attr->getName() << "\t";
         for(i = 1 ; i < dt->mForks; i++)
         {
-            _printSpaces(out, indent + 1);
+            _printSpaces(out, indent);
             out <<  dt->mSplitThreshold << "\n";
-            printHelper(dt->mChildren[i], out, indent + 2);
+            printHelper(dt->mChildren[i], out, indent + 4);
         }
         _printSpaces(out, indent);
-        out <<  ")\n";
     }
     else if(dt->mNodeType == dtnContinuous)
     {
-        Attribute* attr = dt->mAttributeSpec->attributeAt(dt->mSplitAttribute);
-        out << "(split on" << attr->getName() << ":\n";
-        /* left child */
-        _printSpaces(out, indent + 1);
-        out << "< " << dt->mSplitThreshold << "\n";
-        printHelper(dt->mChildren[1], out, indent + 2);
-        /* right child */
-        _printSpaces(out, indent + 1);
-        out << ">= " << dt->mSplitThreshold << "\n";
-        printHelper(dt->mChildren[2], out, indent + 2);
+        Attribute* attr = dt->mAttributeSpec->findAttribute(dt->mSplitAttribute);
         _printSpaces(out, indent);
-        out << ")\n";
+        out << attr->getName() << " <= " << dt->mSplitThreshold << ":";
+        if (dt->mChildren[1]->mNodeType != dtnLeaf) out << "\n";
+        printHelper(dt->mChildren[1], out, indent + 4);
+
+        _printSpaces(out, indent);
+        out << attr->getName() << " > " << dt->mSplitThreshold << ":";
+        if (dt->mChildren[2]->mNodeType != dtnLeaf) out << "\n";
+        printHelper(dt->mChildren[2], out, indent + 4);
     }
     else if(dt->mNodeType == dtnGrowing)
     {
-        out << "(growing)\n";
+        out << "growing\n";
     }
 }
 

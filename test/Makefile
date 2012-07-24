@@ -35,39 +35,39 @@ all:$(OBJ) libmlplus_common.a names_reader_unittest string_utility_unittest attr
 libmlplus_common.a: $(OBJ) 
 	$(AR) rcs $@ $^ 
 
-text_parser_unittest: text_parser_unittest.cpp $(SRC)/io/text_parser.cpp
+text_parser_unittest: text_parser_unittest.cpp $(SRC)/io/text_parser.cpp libmlplus_common.a
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lgmock -lgmock_main -lpthread $^ -lmlplus_common -o $@
 
-attribute_spec_unittest:attribute_spec_unittest.cpp 
+attribute_spec_unittest:attribute_spec_unittest.cpp libmlplus_common.a
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lgmock -lgmock_main -lpthread  $^ -lmlplus_common -o $@
 
-decision_tree_unittest:decision_tree_unittest.cpp $(SRC)/io/text_parser.cpp
+decision_tree_unittest:decision_tree_unittest.cpp $(SRC)/io/text_parser.cpp libmlplus_common.a
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lgmock -lgmock_main -lpthread $^ -lmlplus_common -o $@
-names_reader_unittest: names_file_reader_unittest.cpp 
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lgmock -lgmock_main -lpthread $^ -lmlplus_common -o $@
-
-datetime_unittest: datetime_unittest.cpp
+names_reader_unittest: names_file_reader_unittest.cpp libmlplus_common.a
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lgmock -lgmock_main -lpthread $^ -lmlplus_common -o $@
 
-expression_unittest:  lexer_unittest.cpp 
+datetime_unittest: datetime_unittest.cpp libmlplus_common.a
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lgmock -lgmock_main -lpthread $^ -lmlplus_common -o $@
+
+expression_unittest:  lexer_unittest.cpp libmlplus_common.a
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $^ -lgmock -lgmock_main -lpthread -lmlplus_common -o $@
 
-string_utility_unittest: string_trim_unittest.cpp string_convert_unittest.cpp
+string_utility_unittest: string_trim_unittest.cpp string_convert_unittest.cpp  libmlplus_common.a
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lgmock -lgmock_main -lpthread $^ -o $@
 
-attribute_unittest: attribute_unittest.cpp 
+attribute_unittest: attribute_unittest.cpp  libmlplus_common.a
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lgmock -lgmock_main -lpthread $^ -lmlplus_common -o $@
 
-instance_unittest: instance_unittest.cpp 
+instance_unittest: instance_unittest.cpp  libmlplus_common.a
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lgmock -lgmock_main -lpthread $^ -lmlplus_common -o $@
 
-special_function_unittest: special_function_unittest.cpp
+special_function_unittest: special_function_unittest.cpp  libmlplus_common.a
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lgmock -lgmock_main -lpthread $^ -lmlplus_common -o $@
 
-estimator_unittest: estimator_unittest.cpp 
+estimator_unittest: estimator_unittest.cpp  libmlplus_common.a
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lgmock -lgmock_main -lpthread $^ -lmlplus_common -o $@
 
-naive_bayes_unittest: naive_bayes_unittest.cpp 
+naive_bayes_unittest: naive_bayes_unittest.cpp  libmlplus_common.a
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lgmock -lgmock_main -lpthread $^ -lmlplus_common -o $@
 
 

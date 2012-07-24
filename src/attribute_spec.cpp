@@ -131,7 +131,19 @@ Expression* AttributeSpec::makeExpression(const AttributeDesc& desc) const
     assert(NamesFileReader::testBit(desc.type, NamesFileReader::IMPLICIT));
     return new Expression(desc.value.c_str());
 }
-
+Attribute* AttributeSpec::findAttribute(int index)
+{
+    int i = index;
+    int sz = mAttributes.size();
+    for (; i < sz; ++i)
+    {
+        if (mAttributes[i] && mAttributes[i]->getIndex() == i)
+        {
+            return mAttributes[i];
+        }
+    }
+    return NULL;
+}
 int  AttributeSpec::findIndex(const std::string& name) const
 {
     std::vector<Attribute*>::const_iterator it =  mAttributes.begin();

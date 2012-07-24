@@ -22,6 +22,7 @@ public:
     Attribute* makeAttribute(const AttributeDesc& desc) const;
     Expression* makeExpression(const AttributeDesc& desc) const;
     Attribute* attributeAt(int index);
+    Attribute* findAttribute(int index);
     inline const std::vector<Attribute*>& attributesVector() const;
     inline const std::vector<Expression*>& expressionVector() const; 
     int findIndex(const std::string& name) const;
