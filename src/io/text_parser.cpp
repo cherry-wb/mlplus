@@ -37,12 +37,12 @@ DataSet* TextParser::readData(const std::string& filename)
     const std::vector<Attribute*>& allAttri = mpSpec->attributesVector();
     const std::vector<Expression*>& expressions = mpSpec->expressionVector();
     Attribute* target = NULL;
-    for (unsigned int i = 0; i < allAttri.size(); ++i)
+    for(unsigned int i = 0; i < allAttri.size(); ++i)
     {
-        if (NULL == allAttri[i])  continue;
+        if(NULL == allAttri[i])  continue;
         target = allAttri[i]->clone();
         attributes->add(target);
-        if (mpSpec->isTarget(target))
+        if(mpSpec->isTarget(target))
         {
             pDataSet->setTarget(target);
         }
@@ -58,19 +58,19 @@ DataSet* TextParser::readData(const std::string& filename)
     {
         ++lineCount;
         mlplus::split(line, valuelist, mDelim);
-        if (valuelist.size() != mpSpec->explictAttributeCount())
+        if(valuelist.size() != mpSpec->explictAttributeCount())
         {
             cerr << "\nERROR at line " << lineCount << " filename " << endl;
             delete pDataSet;
             exit(1);
         }
         decodeValue.clear();
-        for (unsigned j = 0; j < mpSpec->explictAttributeCount(); ++j)
+        for(unsigned j = 0; j < mpSpec->explictAttributeCount(); ++j)
         {
-            if (allAttri[j])
+            if(allAttri[j])
             {
                 int index = allAttri[j]->indexOfValue(valuelist[j]);
-                if (index < 0)
+                if(index < 0)
                 {
                     float v = atof(valuelist[j].c_str());
                     decodeValue.push_back(v);
@@ -83,9 +83,9 @@ DataSet* TextParser::readData(const std::string& filename)
                 }
             }
         }
-        for (unsigned j = 0; j < mpSpec->implictAttributeCount(); ++j)
+        for(unsigned j = 0; j < mpSpec->implictAttributeCount(); ++j)
         {
-           decodeValue.push_back(expressions[j]->evaluate(scope));
+            decodeValue.push_back(expressions[j]->evaluate(scope));
         }
         //for implicted attribute
         IInstance* instance = new DenseInstance(decodeValue);
