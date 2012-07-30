@@ -156,7 +156,7 @@ public:
     { 
         return mIndex;
     }
-    inline const Range& getRange() const
+    inline Range& getRange() 
     {
         return mRange;
     } 

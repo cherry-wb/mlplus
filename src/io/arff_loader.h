@@ -1,5 +1,5 @@
-#ifndef __WEKACPP_CORE_CONVERTERS_ARFFLOADER__
-#define __WEKACPP_CORE_CONVERTERS_ARFFLOADER__
+#ifndef MLPLUS_ARFFLOADER_H
+#define MLPLUS_ARFFLOADER_H
 
 #include "attribute.h"
 #include "instance_interface.h"
@@ -50,7 +50,7 @@ private:
     std::streambuf* mStream;
     bool mbHeaderRead;
     std::string mRelationName;
-    vector<Attribute *> mAttributes;
+    vector<Attribute*> mAttributes;
     DataSet* mHeader;
     int mLine;
 

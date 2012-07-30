@@ -1,16 +1,11 @@
 #include <iostream>
 #include <cmath> // for abs
-
 #include "io/arff_parser.h"
-#include "utils/utils.h"
 
 namespace mlplus
 {
-
 // ------------------------------------------------------------------------
-
-ArffParser::ArffParser(const string& fileName, const string& headerFileName)
-    : AbstractParser(fileName, headerFileName), _hasName(false)
+ArffParser::ArffParser(const string& headerFileName):AbstractParser(headerFileName)
 {
     _denseLocale  = locale(locale(), new nor_utils::white_spaces(", "));
     _sparseLocale = locale(locale(), new nor_utils::white_spaces(", "));
@@ -18,7 +13,7 @@ ArffParser::ArffParser(const string& fileName, const string& headerFileName)
 
 // ------------------------------------------------------------------------
 
-void ArffParser::readData(vector<Example>& examples, NameMap& classMap,
+DataSet* ArffParser::readData(vector<Example>& examples, NameMap& classMap,
                           vector<NameMap>& enumMaps, NameMap& attributeNameMap,
                           vector<RawData::eAttributeType>& attributeTypes)
 {

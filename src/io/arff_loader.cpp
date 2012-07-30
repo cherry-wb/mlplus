@@ -314,6 +314,8 @@ void ArffLoader::readHeader()
         return;
     Attribute* attr = NULL;
     Token token = getNextToken();
+    VectorAttributeContainer* attributes = new VectorAttributeContainer();
+
     while(token.kind != Token::DATA)
     {
         switch(token.kind)
@@ -360,15 +362,15 @@ void ArffLoader::readHeader()
                 if(token.text == "numeric" || token.text == "real" ||
                         token.text == "integer")
                 {
-                    attr = (Attribute *)
-                           new NumericAttribute(name, mAttributes.size());
-                    mAttributes.push_back(attr);
+                    attr = new Attribute(name, Attribute::NUMERIC);
+                    attr->setIndex(attributes.size());
+                    attributes.push_back(attr);
                 }
                 else if(token.text == "string")
                 {
-                    attr = (Attribute *)
-                           new StringAttribute(name, mAttributes.size());
-                    mAttributes.push_back(attr);
+                    attr = new Attribute(name, Attribute::STRING);
+                    attr->setIndex(attributes.size());
+                    attributes.push_back(attr);
                 }
                 else
                 {
@@ -382,8 +384,7 @@ void ArffLoader::readHeader()
                 if(token.kind == Token::LBRACK ||
                         token.kind == Token::LPAREN)
                 {
-                    ((NumericAttribute *)attr)->mLowerBoundIsOpen =
-                        (token.kind == Token::LPAREN);
+                    attr->getRange().mLowerBoundIsOpen = (token.kind == Token::LPAREN);
                     token = getNextToken();
                     if(token.kind != Token::NUMBER)
                     {
@@ -395,11 +396,11 @@ bad_range:
                     }
                     if(token.text == "-inf")
                     {
-                        ((NumericAttribute *)attr)->mLowerBound = -INFINITY;
+                        attr->getRange().mLowerBound = -INFINITY;
                     }
                     else
                     {
-                        ((NumericAttribute *)attr)->mLowerBound =
+                        attr->getRange().mLowerBound =
                             strtod(token.text.c_str(), NULL);
                     }
                     token = getNextToken();
@@ -410,18 +411,18 @@ bad_range:
                         goto bad_range;
                     if(token.text == "inf")
                     {
-                        ((NumericAttribute *)attr)->mUpperBound = INFINITY;
+                        attr->getRange().mUpperBound = INFINITY;
                     }
                     else
                     {
-                        ((NumericAttribute *)attr)->mUpperBound =
+                        attr->getRange().mUpperBound =
                             strtod(token.text.c_str(), NULL);
                     }
                     token = getNextToken();
                     if((token.kind != Token::RBRACK) &&
                             (token.kind != Token::RPAREN))
                         goto bad_range;
-                    ((NumericAttribute *)attr)->mUpperBoundIsOpen =
+                    attr->getRange().mUpperBoundIsOpen =
                         (token.kind == Token::RPAREN);
                 }
                 else
@@ -433,9 +434,9 @@ bad_range:
 
             case Token::LBRACE:
             {
-                attr = (Attribute *)
-                       new NominalAttribute(name, mAttributes.size());
-                mAttributes.push_back(attr);
+                attr = new Attribute(name);
+                attr->setIndex(attributes.size());
+                attributes.push_back(attr);
                 token = getNextToken();
                 while(token.kind != Token::RBRACE)
                 {
@@ -444,7 +445,7 @@ bad_range:
                     case Token::IDENT:
                     case Token::NUMBER:
                     case Token::STRING:
-                        attr->addValue(new string(token.text));
+                        attr->addValue(token.text);
                         break;
                     case Token::COMMA:
                         break;
@@ -481,9 +482,9 @@ attr_unexpected:
 
     mPhase = IN_DATA;
     mbHeaderRead = true;
-
-    mHeader = new Instances(mRelationName, mAttributes);
-    mHeader->setClassIndex(mAttributes.size() - 1);
+    DenseInstanceContainer* instances = new DenseInstanceContainer();
+    mHeader = new DataSet(mRelationName, attributes, instances);
+    mHeader->setClassIndex(attributes.size() - 1);
 }
 
 ArffLoader::ArffLoader(streambuf * s)
@@ -498,42 +499,29 @@ ArffLoader::ArffLoader(streambuf * s)
 ArffLoader::~ArffLoader()
 {
     // delete header, if any
-
     if(mHeader != NULL)
         delete mHeader;
-
-    // clean attribute vector
-
-    vector<Attribute *>::iterator i = mAttributes.begin();
-    while(i != mAttributes.end())
-    {
-        delete *i;
-        i++;
-    }
 }
 
-Instances *
-ArffLoader::getStructure()
+DataSet* ArffLoader::getStructure()
 {
     if(!mbHeaderRead)
         readHeader();
     return mHeader;
 }
 
-Instances *
-ArffLoader::getDataSet()
+DataSet* ArffLoader::getDataSet()
 {
     if(!mbHeaderRead)
         readHeader();
-    Instances * instances = new Instances(mHeader);
-    Instance * instance;
+    IInstanceContainer* instances = mHeader->getInstanceContainer();
+    IInstance* instance;
     while((instance = getNextInstance()) != NULL)
         instances->add(instance);
-    return instances;
+    return mHeader;
 }
 
-Instance *
-ArffLoader::getNextInstance()
+IInstance * ArffLoader::getNextInstance()
 {
     if(!mbHeaderRead)
         readHeader();
@@ -541,7 +529,7 @@ ArffLoader::getNextInstance()
     if(mPhase != IN_DATA)
         return NULL;
 
-    vector<double> values(mHeader->numAttributes());
+    vector<float> values(mHeader->numAttributes());
     int i = 0;
     while(i < mHeader->numAttributes())
     {
@@ -564,8 +552,8 @@ ArffLoader::getNextInstance()
             {
             case Token::NUMBER:
             {
-                double v;
-                sscanf(token.text.c_str(), "%lf", &v);
+                float v;
+                sscanf(token.text.c_str(), "%f", &v);
                 values[i] = v;
             }
             break;
@@ -615,10 +603,8 @@ ArffLoader::getNextInstance()
 
         i++;
     }
-
-    Instance * instance = new Instance(1.0, values);
+    IInstance* instance = new  DenseInstance(values);
     instance->setDataset(mHeader);
-
     return instance;
 }
 

@@ -1,9 +1,6 @@
 #pragma warning( disable : 4786 )
-
-
-#ifndef __ARFF_PARSER_H
-#define __ARFF_PARSER_H
-
+#ifndef MLPLUS_ARFF_PARSER_H
+#define MLPLUS_ARFF_PARSER_H
 #include <fstream>
 #include <sstream>
 #include "abstract_parser.h"
@@ -17,43 +14,20 @@ namespace mlplus
 class ArffParser : public AbstractParser
 {
 public:
-    /**
-     * The constructor. It initializes the file names and the separators.
-     * \date 30/07/2010
-     */
-    ArffParser(const string& headerFileName);
-    virtual void readData(const std::string& filename);
-    virtual int  getNumAttributes() const
-    {
-        return _numAttributes;
-    }
+    ArffParser(const std::string& headerFileName);
+    /*override*/virtual DataSet* readData(const std::string& filename);
 protected:
-    /**
-     * Read the header. It reads the class labels, attribute names, attribute types and
-     * the mappings of nominal features.
-     * @param in The file stream.
-     * @param \see AbstractParser::readData
-     */
     void readHeader(ifstream& in);
 
-    /**
-     * Read the data. The arff can be sparse and dense as well.
-     * \param in The file stream.
-     * \param \see AbstractParser::readData
-     * \data 30/07/2011
-     */
     void readData(ifstream& in, vector<Example>& examples, NameMap& classMap,
                   vector<NameMap>& enumMaps,
                   const vector<RawData::eAttributeType>& attributeTypes);
 
-    string readName(ifstream& in);
+    string readName(istream& in);
 
-    void readDenseValues(ifstream& in, vector<FeatureReal>& values, vector<NameMap>& enumMaps,
-                         const vector<RawData::eAttributeType>& attributeTypes);
+    void readDenseValues(istream& in);
 
-    void readSparseValues(istringstream& ss, vector<FeatureReal>& values, vector<int>& idxs, map<int, int>& idxmap,
-                          vector<NameMap>& enumMaps,
-                          const vector<RawData::eAttributeType>& attributeTypes);
+    void readSparseValues(istream& ss);
 
     /**
      * Read labels declared in the standard arff format:
@@ -105,7 +79,7 @@ protected:
      * \remark Internally this type of label is stored as sparse. This will have
      * a small hit in terms of memory, but nothing in terms of performance.
      */
-    void readExtendedLabels(istringstream& ss, vector<Label>& labels, NameMap& classMap);
+    void readExtendedLabels(istream& ss, vector<Label>& labels, NameMap& classMap);
 
     enum eTokenType
     {
@@ -120,7 +94,6 @@ protected:
     eTokenType getNextTokenType(ifstream& in);
 
     int            _numAttributes;
-    string         _headerFileName;
 
     locale         _denseLocale;
     locale         _sparseLocale;
@@ -129,7 +102,7 @@ protected:
 
 // -----------------------------------------------------------------------------
 
-inline string ArffParser::readName(ifstream& in)
+inline string ArffParser::readName(std::ifstream& in)
 {
     const locale& originalLocale = in.imbue(_denseLocale);
     string name;
@@ -138,8 +111,7 @@ inline string ArffParser::readName(ifstream& in)
     return name;
 }
 
-// -----------------------------------------------------------------------------
 
 } // end of namespace mlplus
 
-#endif // __ARFF_PARSER_H
+#endif // 
