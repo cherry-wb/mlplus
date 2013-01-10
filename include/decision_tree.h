@@ -5,6 +5,7 @@
 #include <iostream>
 namespace mlplus
 {
+
 typedef enum
 {
     dtnLeaf,
@@ -17,6 +18,7 @@ class AttributeSpec;
 class IInstance;
 class Attribute;
 class DecisionTree;
+class BoostDecisionTree; 
 typedef  DecisionTree* DecisionTreePtr;
 class DecisionTree
 {
@@ -58,7 +60,7 @@ public:
     int getChildCount();
     DecisionTreePtr getChild(int index);
     DecisionTreePtr oneStepClassify(IInstance* e);
-    int classify(IInstance* e);
+    int classify(IInstance* e, float& confidence);
     void growingNodes(std::list<DecisionTreePtr>& list);
     void gatherLeaves(std::list<DecisionTreePtr>& list);
     void gatherGrowingNodes(std::list<DecisionTreePtr>& list);
@@ -88,6 +90,21 @@ private:
     static int which(char* val, char** list, int first, int last);
     static Set64 makeSubset(char* PropVal, Attribute* attr);
     static int readProp(std::istream& is, char *delim, char* propName, char* proVal);
+    friend class BoostDecisionTree;
+};
+
+class BoostDecisionTree
+{
+public:
+    BoostDecisionTree();
+    ~BoostDecisionTree();
+    bool read(std::istream& in, AttributeSpec* spec);
+    int classify(IInstance* e, float& confidence);
+private:
+    bool readHead(std::istream& in);
+    int mTreeCount;
+    int mNumClasses;
+    DecisionTreePtr* mppTrees;
 };
 }
 #endif /* DECISIONTREEH */

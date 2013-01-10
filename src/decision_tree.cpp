@@ -73,10 +73,20 @@ void DecisionTree::free()
                 mChildren[i]->free();
             }
             delete[] mChildren;
+            mChildren = NULL;
         }
     }
-    if (mClassDist) delete[] mClassDist;
-    if (mSubset) delete[] mSubset;
+    if (mClassDist)
+    {
+        delete[] mClassDist;
+        mClassDist = NULL;
+    }
+    if (mSubset)
+    {
+        delete[] mSubset;
+        mSubset = NULL;
+    }
+    delete this;
 }
 
 DecisionTreePtr DecisionTree::clone()
@@ -160,10 +170,7 @@ float DecisionTree::getClassProb(int theClass)
 
 void  DecisionTree::setClassProb(int theClass, float prob)
 {
-    if(mCases == 0)
-    {
-        mCases = 1;
-    }
+    mCases = mCases == 0 ? 1 : mCases;
     mClassDist[theClass] = prob * mCases;
 }
 
@@ -222,7 +229,8 @@ void DecisionTree::resetChild(int childCount)
     mForks = childCount;
     if (NULL != mChildren)
     {
-        delete mChildren;
+        delete[] mChildren;
+        mChildren = NULL;
     }
     mChildren = new DecisionTreePtr[childCount];
 }
@@ -300,7 +308,7 @@ DecisionTreePtr DecisionTree::oneStepClassify(IInstance* e)
     return this;
 }
 
-int DecisionTree::classify(IInstance* ins)
+int DecisionTree::classify(IInstance* ins, float& confidence)
 {
     int depth = 1;
     DecisionTreePtr current, last;
@@ -312,8 +320,10 @@ int DecisionTree::classify(IInstance* ins)
         current = last->oneStepClassify(ins);
         depth++;
     }
+    int klass = current->mMyClass;
+    confidence = current->mClassDist[klass]/current->mCases;
     //WARN_IF(last != current, "%s", "at depth 50000 in,something must be wrong.\n");
-    return current->mMyClass;
+    return klass;
 }
 
 void DecisionTree::gatherLeaves(list<DecisionTreePtr>& list)
@@ -415,9 +425,8 @@ int DecisionTree::getMostCommonClass()
             mostCommon = i;
         }
     }
-
     delete[] counts;
-
+    counts = NULL;
     return mostCommon;
 }
 
@@ -637,24 +646,23 @@ int DecisionTree::readProp(istream& is, char *delim, char* propName, char* propV
         {
             Quote = !Quote;
         }
+        else if(c == '\\')//for \"
+        {
+            *p++ = is.get();
+        }
         else
         {
             *p++ = c;
-            if(c == '\\')//for \"
-            {
-                *p++ = is.get();
-            }
         }
     }
     *p = '\00';
     *delim = c;
-    return which(propName, Prop, 1, PROPS);
+    return which(propName, ::Prop, 1, PROPS);
 }
 int DecisionTree::which(char* val, char** list, int first, int last)
 {
     int n = first;
-    while(n <= last && strcmp(val, list[n])) n++;
-
+    while(n <= last && strcmp(val, list[n]) !=0) n++;
     return (n <= last ? n : first - 1);
 }
 
@@ -667,15 +675,15 @@ DecisionTreePtr DecisionTree::readC5Text(istream& in, AttributeSpec* spec)
     double  XD;
     int  classCount = spec->numTarget();
     DecisionTreePtr pTree = newTree(spec);
-    char propName[128];
-    char propVal[256];
+    char propName[128]={0};
+    char propVal[256]={0};
     string str(propVal);
     do
     {
         switch(readProp(in, &delim, propName, propVal))
         {
         case ERRORP:
-            delete pTree;
+            pTree->free();
             return NULL;
         case TYPEP:
             sscanf(propVal, "%d", &X);
@@ -690,7 +698,7 @@ DecisionTreePtr DecisionTree::readC5Text(istream& in, AttributeSpec* spec)
             pTree->mSplitAttribute = spec->findIndex(str);
             if(pTree->mSplitAttribute < 0)
             {
-                delete pTree;
+                pTree->free();
                 return NULL;
             }
             break;
@@ -745,7 +753,8 @@ DecisionTreePtr DecisionTree::readC5Text(istream& in, AttributeSpec* spec)
     }
     else
     {
-        //pTree->mClassDist = Alloc(1, CaseCount);
+        pTree->mClassDist = new float[1];
+        pTree->mClassDist[0]  = 1;
     }
     if(pTree->mNodeType != dtnLeaf)
     {
@@ -823,5 +832,95 @@ void DecisionTree::write(ostream& out)
     case dtnSubset:
         break;
     }
-
+}
+int  BoostDecisionTree::classify(IInstance* e, float& confidence)
+{
+    float vote[mNumClasses];
+    //float total = 0.0f;
+    int best = 0;
+    confidence = 0;
+    for (int i = 0; i < mNumClasses; ++i)
+    {
+        vote[i] = 0;
+    }
+    for (int i = 0;i < mTreeCount; ++i)
+    {
+        float temp = 0;
+        int c = mppTrees[i]->classify(e, temp); 
+        vote[c] += temp;
+    }
+    float weight = 1.0/mTreeCount;//can be different
+    for (int i = 0; i < mNumClasses; ++i)
+    {
+        vote[i]*= weight;
+        if (vote[i] >= confidence)
+        {
+            confidence = vote[i];
+            best = i;
+        }
+    }
+    return best;
+}
+bool BoostDecisionTree::read(std::istream& in, AttributeSpec* spec)
+{
+    if (readHead(in) && mTreeCount > 0)
+    {
+        mNumClasses = spec->numTarget();
+        mppTrees = new DecisionTreePtr[mTreeCount];
+        memset(mppTrees, 0, mTreeCount * sizeof(DecisionTreePtr));
+        for (int i = 0; i < mTreeCount; ++i)
+        {
+            mppTrees[i] = DecisionTree::readC5Text(in, spec);
+        }
+        return true;
+    }
+    else
+    {
+       ERROR("read header file error with trees:%d", mTreeCount);
+    }
+    return false;
+}
+BoostDecisionTree::BoostDecisionTree():mTreeCount(0),mNumClasses(0),mppTrees(0)
+{
+}
+BoostDecisionTree::~BoostDecisionTree()
+{
+    if (mppTrees != NULL)
+    {
+        for (int i = 0; i < mTreeCount; ++i)
+        {
+            mppTrees[i]->free();
+        }
+        delete []mppTrees;
+    }
+}
+bool BoostDecisionTree::readHead(std::istream& in)
+{
+    char propName[128]={0};
+    char propVal[256]={0};
+    char delim;
+    while(true)
+    {
+        switch(DecisionTree::readProp(in, &delim, propName, propVal))
+        {
+        case ERRORP:
+            return false;
+        case IDP:
+            //id="....."
+            break;
+        case COSTSP:
+            //TODO: get cost file
+            break;
+        case ATTP:
+            break;
+        case ELTSP:
+            break;
+        case ENTRIESP:
+            sscanf(propVal, "%d", &mTreeCount);
+            return true;
+        default:
+            break;
+        }
+    }
+    return false;
 }
