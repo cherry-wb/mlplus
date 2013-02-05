@@ -836,7 +836,7 @@ void DecisionTree::write(ostream& out)
 int  BoostDecisionTree::classify(IInstance* e, float& confidence)
 {
     float vote[mNumClasses];
-    //float total = 0.0f;
+    float total = 0.0f;
     int best = 0;
     confidence = 0;
     for (int i = 0; i < mNumClasses; ++i)
@@ -848,11 +848,11 @@ int  BoostDecisionTree::classify(IInstance* e, float& confidence)
         float temp = 0;
         int c = mppTrees[i]->classify(e, temp); 
         vote[c] += temp;
+        total += temp;
     }
-    float weight = 1.0/mTreeCount;//can be different
     for (int i = 0; i < mNumClasses; ++i)
     {
-        vote[i]*= weight;
+        vote[i]/= total;
         if (vote[i] >= confidence)
         {
             confidence = vote[i];
