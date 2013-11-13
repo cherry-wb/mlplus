@@ -70,11 +70,11 @@ int main(int argn, char** args)
             if (i != 0)
             {
                 idcs = boost::lexical_cast<int, string>(kvs[0]) - 1;
-                value = boost::lexical_cast<ValueType, string>(kvs.back());
+                value = boost::lexical_cast<ValueType>(kvs.back());
             }
             else
             {
-                value = boost::lexical_cast<ValueType, string>(kvs.back()) - 1;
+                value = boost::lexical_cast<ValueType>(kvs.back()) - 1;
             }
             target->setIndex(idcs);
             attributes->add(target);

@@ -17,14 +17,16 @@ TEST(decisionTreeTest, smock) {
     BoostDecisionTree tree;
     tree.read(ifs, p->getAttributeSpec()); 
     //ptr->print(cout);
+    float* confidence = new float[10];
     for (int i = 0; i < pData->numInstances(); ++i)
     {
         IInstance* instance = pData->instanceAt(i);
         Attribute* attr = pData->targetAttribute();
-        float confidence = 0;
+
         cout << attr->getValue((int)instance->targetValue()) <<" " <<  
-            attr->getValue(tree.classify(instance, confidence)) << " ";
-        cout << confidence << endl;
+            attr->getValue(tree.classify(instance, &confidence)) << " ";
+        cout << confidence[0] << endl;
     }
+    delete confidence;
     delete pData;
 }

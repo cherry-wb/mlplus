@@ -71,7 +71,6 @@ int main(int argn, char** args)
     //pair<int, double> v = bayes.predict(instance);
     //cout << "predict:" << v.first << " with prob: " << v.second << endl;
     //
-
     AutoInstanceIteratorPtr instanceIt(dataset.newInstanceIterator());
     float all = 0;
     float right = 0;

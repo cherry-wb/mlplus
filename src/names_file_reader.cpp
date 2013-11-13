@@ -218,8 +218,8 @@ void NamesFileReader::parseLine(const string& line)
             else
             {
                 desc.value = trimCopy(result[1].substr(0,end));
-                char* aInclude[] = {"attributes", "include"};
-                char* aExclude[] = {"attributes", "exclude"};
+                char* aInclude[] = {"attributes", "included"};
+                char* aExclude[] = {"attributes", "excluded"};
                 vector<string> attrInlude(aInclude, aInclude + 2);
                 vector<string> attrExclude(aExclude, aExclude + 2); 
                 vector<string> key;

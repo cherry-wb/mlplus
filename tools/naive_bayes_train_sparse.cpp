@@ -27,6 +27,7 @@ int main(int argn, char** args)
     IInstanceContainer* instances = new SparseInstanceContainer();
     DataSet dataset("sparse_classify", attributes, instances);
     vector<string> attributeVector;
+    attributeVector.reserve(100000);
     IInstance* instance = NULL;
     while(getline(ifs, str))
     {
@@ -37,14 +38,16 @@ int main(int argn, char** args)
         {
             if (attributeVector[i].empty()) continue;
             vector<string> kvs;
+
             split(kvs, attributeVector[i], is_any_of(":"));
+            
             Attribute* target = new Attribute(kvs[0], Attribute::BINARY);//name of attribute
             int idcs = 0;
             ValueType value = 0;
             if (i != 0)
             {
-                idcs = boost::lexical_cast<int, string>(kvs[0]);
-                value = boost::lexical_cast<ValueType, string>(kvs.back());
+                idcs = boost::lexical_cast<int>(kvs[0]);
+                value = boost::lexical_cast<ValueType>(kvs.back());
             }
             else
             {
@@ -54,6 +57,7 @@ int main(int argn, char** args)
             attributes->add(target);
             indices.push_back(idcs);
             values.push_back(value);
+
         }
         instance = new SparseInstance(values, indices, 1);
         instance->setDataset(&dataset);
@@ -62,7 +66,7 @@ int main(int argn, char** args)
     }
     dataset.setTargetIndex(0);
     NaiveBayes bayes("sparse_classify", 6);
-    bayes.setEventModel();
+    //bayes.setEventModel();
     bayes.train(&dataset);
     //std::vector<double> vect = bayes.targetDistribution(instance);
     //copy(vect.begin(),vect.end(),ostream_iterator<double>( cout," " ));

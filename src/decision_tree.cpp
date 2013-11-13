@@ -254,7 +254,11 @@ DecisionTreePtr DecisionTree::getChild(int index)
 {
     return mChildren[index];
 }
-
+void  DecisionTree::treeDebug(int att, float threshold, float value)
+{
+    Attribute* atr = mAttributeSpec->findAttribute(att);
+    cout << atr->getName() << threshold << "\tgiven:" << value << endl;
+}
 DecisionTreePtr DecisionTree::oneStepClassify(IInstance* e)
 {
     if(mNodeType == dtnLeaf || mNodeType == dtnGrowing)
@@ -262,6 +266,9 @@ DecisionTreePtr DecisionTree::oneStepClassify(IInstance* e)
         return this;
     }
     ValueType value = e->getValue(mSplitAttribute);
+#ifdef TREE_DEBUG
+    treeDebug(mSplitAttribute, mSplitThreshold, value); 
+#endif
     if(mNodeType == dtnDiscrete)
     {
         if(AttributeValue::isMissingValue(value))
@@ -308,8 +315,9 @@ DecisionTreePtr DecisionTree::oneStepClassify(IInstance* e)
     return this;
 }
 
-int DecisionTree::classify(IInstance* ins, float& confidence)
+int DecisionTree::classify(IInstance* ins, float**i_confidence)
 {
+    float *confidence = *i_confidence;
     int depth = 1;
     DecisionTreePtr current, last;
     last = this;
@@ -321,7 +329,11 @@ int DecisionTree::classify(IInstance* ins, float& confidence)
         depth++;
     }
     int klass = current->mMyClass;
-    confidence = current->mClassDist[klass]/current->mCases;
+    for (int i = 0; i <  mAttributeSpec->numTarget(); ++i)
+    {
+        confidence[i] = float(current->mClassDist[i])/float(current->mCases);
+    }
+    //cout << current->mClassDist[klass] << "\t" << current->mCases << "\t" << confidence << endl;
     //WARN_IF(last != current, "%s", "at depth 50000 in,something must be wrong.\n");
     return klass;
 }
@@ -833,29 +845,34 @@ void DecisionTree::write(ostream& out)
         break;
     }
 }
-int  BoostDecisionTree::classify(IInstance* e, float& confidence)
+int  BoostDecisionTree::classify(IInstance* e, float**iconfidence)
 {
-    float vote[mNumClasses];
-    float total = 0.0f;
     int best = 0;
-    confidence = 0;
+    float* confidence = *iconfidence;
     for (int i = 0; i < mNumClasses; ++i)
     {
-        vote[i] = 0;
+        confidence[i] = 0;
     }
+
+    float sum = 0;
     for (int i = 0;i < mTreeCount; ++i)
     {
-        float temp = 0;
-        int c = mppTrees[i]->classify(e, temp); 
-        vote[c] += temp;
-        total += temp;
+        float *temp = new float[mNumClasses];
+        mppTrees[i]->classify(e, &temp); 
+        for (int j = 0; j < mNumClasses; ++j)
+        {
+            confidence[j] += temp[j];
+            sum +=confidence[j];
+        }
+        delete[] temp;
     }
+    float largest = 0;
     for (int i = 0; i < mNumClasses; ++i)
     {
-        vote[i]/= total;
-        if (vote[i] >= confidence)
+        confidence[i]/= sum;
+        if (confidence[i] >= largest)
         {
-            confidence = vote[i];
+            largest = confidence[i];
             best = i;
         }
     }

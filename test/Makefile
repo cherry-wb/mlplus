@@ -27,7 +27,7 @@ INCLUDE = $(PROJECT_DIR)/include
 SRCS=abstract_instance.cpp instance.cpp  attribute.cpp instance_container.cpp attribute_container.cpp special_functions.cpp estimator.cpp  normal_estimator.cpp discrete_estimator.cpp binary_estimator.cpp dataset.cpp expression.cpp scope.cpp lexer.cpp names_file_reader.cpp attribute_spec.cpp datetime.cpp naive_bayes.cpp decision_tree.cpp log.cpp
 OBJ=$(SRCS:.cpp=.o)
 
-all:$(OBJ) libmlplus_common.a names_reader_unittest string_utility_unittest attribute_unittest instance_unittest special_function_unittest estimator_unittest  naive_bayes_unittest expression_unittest datetime_unittest attribute_spec_unittest decision_tree_unittest text_parser_unittest
+all:$(OBJ) libmlplus_common.a names_reader_unittest string_utility_unittest attribute_unittest instance_unittest special_function_unittest estimator_unittest  naive_bayes_unittest expression_unittest datetime_unittest attribute_spec_unittest decision_tree_unittest text_parser_unittest gbdt_unittest
 
 %.o: $(SRC)/%.cpp 
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $< -o $@
@@ -70,6 +70,8 @@ estimator_unittest: estimator_unittest.cpp  libmlplus_common.a
 naive_bayes_unittest: naive_bayes_unittest.cpp  libmlplus_common.a
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lgmock -lgmock_main -lpthread $^ -lmlplus_common -o $@
 
+gbdt_unittest:gbdt_unittest.cpp 
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lgmock -lgmock_main -lpthread $^ -o $@
 
 clean :
 	rm -f $(TESTS) *.o

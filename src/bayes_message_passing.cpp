@@ -56,11 +56,17 @@ void BayesMsgPassing::train(DataSet* dataset)
         {
             continue;
         }
+        if (mDistributions.find(attIndex) == mDistributions.end()) 
+        {
+            mDistributions[attIndex] = new DiscreteEstimator(mClassesCount, false);//P(Class|word)
+        }
+        /*
         PosteriorProbability& pp =  mDistributions[attIndex];
         if (pp == NULL)
         {
             pp = new DiscreteEstimator(mClassesCount, false);//P(Class|word)
         }
+        */
     }
     AutoInstanceIteratorPtr instanceIt(dataset->newInstanceIterator());
     while(instanceIt->hasMore())

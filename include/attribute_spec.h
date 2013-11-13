@@ -33,6 +33,7 @@ private:
     std::vector<Expression*> mImplictExpression;
     std::vector<Attribute*> mAttributes;
 };
+
 inline bool AttributeSpec::isTarget(Attribute* at) const
 {
     if (at)

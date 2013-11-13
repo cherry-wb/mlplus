@@ -58,9 +58,10 @@ public:
     void splitOnDiscreteAttribute(int attNum);
     void splitOnContinuousAttribute(int attNum, float threshold);
     int getChildCount();
+    void  treeDebug(int att, float threshold, float value);
     DecisionTreePtr getChild(int index);
     DecisionTreePtr oneStepClassify(IInstance* e);
-    int classify(IInstance* e, float& confidence);
+    int classify(IInstance* e, float* *confidence);
     void growingNodes(std::list<DecisionTreePtr>& list);
     void gatherLeaves(std::list<DecisionTreePtr>& list);
     void gatherGrowingNodes(std::list<DecisionTreePtr>& list);
@@ -99,7 +100,9 @@ public:
     BoostDecisionTree();
     ~BoostDecisionTree();
     bool read(std::istream& in, AttributeSpec* spec);
-    int classify(IInstance* e, float& confidence);
+    int classify(IInstance* e, float* *confidence);
+    int numTree() const {return mTreeCount;}
+    int numClasses() const {return mNumClasses;}
 private:
     bool readHead(std::istream& in);
     int mTreeCount;
