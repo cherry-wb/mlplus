@@ -20,7 +20,7 @@ void bye(int argn, char** args)
     cerr << "examples:\n"
          << "\t" << args[0] << " examples.names examples.model < cases\n"
          << "\n"
-         << "mail: charis.yangc@alibaba-inc.com\n"
+         << "mail: my email.com\n"
          << "\n";
     exit(1);
 }
